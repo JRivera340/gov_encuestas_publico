@@ -1,0 +1,16 @@
+{
+  "name": "gov_encuestas_publica",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:backend": "npm run start:dev --workspace=packages/backend",
+    "dev:frontend": "npm run dev --workspace=packages/frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "packages/*"
+  ]
+}
