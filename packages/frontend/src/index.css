@@ -1,3 +1,204 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --c-bg: #0d1117;
+    --c-surface: #161b22;
+    --c-card: #1c2128;
+    --c-hover: #21262d;
+    --c-border: #30363d;
+    --c-border-muted: #21262d;
+    --c-text: #e6edf3;
+    --c-muted: #8b949e;
+    --c-faint: #484f58;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--c-bg);
+    color: var(--c-text);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--c-surface); }
+  ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--c-faint); }
+}
+
+@layer components {
+  /* ── Card ──────────────────────────────────────────────────── */
+  .card {
+    border-radius: 0.75rem;
+    border: 1px solid var(--c-border);
+    background-color: var(--c-card);
+    padding: 1.25rem;
+    transition: all 200ms;
+  }
+  .card-hover:hover {
+    border-color: var(--c-faint);
+    background-color: var(--c-hover);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4);
+  }
+
+  /* ── Button base ────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 150ms;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    line-height: 1.25rem;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 150ms;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    line-height: 1.25rem;
+    background-color: #2563eb;
+    color: #ffffff;
+  }
+  .btn-primary:hover { background-color: #3b82f6; }
+  .btn-primary:active { background-color: #1d4ed8; }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 150ms;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.25rem;
+    border: 1px solid var(--c-border);
+    background-color: var(--c-hover);
+    color: #c9d1d9;
+  }
+  .btn-secondary:hover { border-color: var(--c-faint); background-color: #2d333b; }
+  .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 150ms;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.25rem;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    background-color: rgba(220, 38, 38, 0.1);
+    color: #f87171;
+  }
+  .btn-danger:hover { background-color: rgba(220, 38, 38, 0.2); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 150ms;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    line-height: 1.25rem;
+    background: transparent;
+    color: var(--c-muted);
+  }
+  .btn-ghost:hover { color: var(--c-text); background-color: var(--c-hover); }
+
+  /* ── Form controls ─────────────────────────────────────────── */
+  .input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--c-border);
+    background-color: var(--c-bg);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--c-text);
+    outline: none;
+    transition: border-color 150ms, box-shadow 150ms;
+    font-family: inherit;
+    color-scheme: dark;
+  }
+  .input::placeholder { color: var(--c-faint); }
+  .input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  .input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .select {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--c-border);
+    background-color: var(--c-bg);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--c-text);
+    outline: none;
+    transition: border-color 150ms, box-shadow 150ms;
+    font-family: inherit;
+    appearance: none;
+    cursor: pointer;
+    color-scheme: dark;
+  }
+  .select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  .select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--c-muted);
+    margin-bottom: 0.375rem;
+  }
+
+  /* ── Typography ─────────────────────────────────────────────── */
+  .section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text);
+  }
+}
