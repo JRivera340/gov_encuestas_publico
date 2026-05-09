@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { SeedService } from './seed/seed.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,10 @@ async function bootstrap() {
     }),
   );
 
+  const seedService = app.get(SeedService);
+  await seedService.run();
+
   await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Backend corriendo en http://localhost:${process.env.PORT ?? 3000}`);
+  console.log(`🚀 Backend corriendo en puerto ${process.env.PORT ?? 3000}`);
 }
 bootstrap();
