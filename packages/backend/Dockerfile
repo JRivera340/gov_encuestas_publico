@@ -6,6 +6,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY packages/backend/package.json ./packages/backend/
 
+# Instalar dependencias de compilación para better-sqlite3 y pg
+RUN apk add --no-cache python3 make g++
+
 # Instalar dependencias usando npm workspaces
 RUN npm install
 
