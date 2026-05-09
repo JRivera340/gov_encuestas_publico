@@ -116,7 +116,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
       </div>
 
       {/* Placeholder (solo para TEXT, TEXTAREA, NUMBER) */}
-      {[QuestionType.TEXT, QuestionType.TEXTAREA, QuestionType.NUMBER].includes(type) && (
+      {([QuestionType.TEXT, QuestionType.TEXTAREA, QuestionType.NUMBER] as QuestionType[]).includes(type) && (
         <div>
           <label className="label">Texto de ayuda (placeholder)</label>
           <input
@@ -162,7 +162,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
       )}
 
       {/* Required */}
-      {!['SECTION_HEADER'].includes(type) && (
+      {type !== QuestionType.SECTION_HEADER && (
         <label className="flex items-center gap-3 cursor-pointer select-none">
           <div className="relative">
             <input
