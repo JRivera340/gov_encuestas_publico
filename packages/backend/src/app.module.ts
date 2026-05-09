@@ -13,10 +13,18 @@ import { SeedModule } from './seed/seed.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: 'database.sqlite',
+      ...(process.env.DATABASE_URL
+        ? {
+            type: 'postgres',
+            url: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false },
+          }
+        : {
+            type: 'better-sqlite3',
+            database: process.env.SQLITE_PATH || 'database.sqlite',
+          }),
       autoLoadEntities: true,
-      synchronize: true, // TODO: usar migraciones en producción
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     CategoriesModule,
     SubcategoriesModule,

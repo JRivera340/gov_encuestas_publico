@@ -26,6 +26,7 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
 }) => {
   const [type, setType] = useState<QuestionType>(initialData?.type ?? QuestionType.TEXT);
   const [label, setLabel] = useState(initialData?.label ?? '');
+  const [name, setName] = useState(initialData?.name ?? '');
   const [placeholder, setPlaceholder] = useState(initialData?.placeholder ?? '');
   const [required, setRequired] = useState(initialData?.required ?? false);
   const [options, setOptions] = useState<QuestionOption[]>(
@@ -34,6 +35,23 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   const [newOption, setNewOption] = useState('');
 
   const needsOptions = OPTION_TYPES.includes(type);
+
+  const generateNameFromLabel = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+      .replace(/[^a-z0-9\s]/g, "")     // Quitar caracteres especiales
+      .trim()
+      .replace(/\s+/g, "_");           // Espacios a underscores
+  };
+
+  const handleLabelChange = (val: string) => {
+    setLabel(val);
+    if (!initialData?.name && (!name || name === generateNameFromLabel(label))) {
+      setName(generateNameFromLabel(val));
+    }
+  };
 
   const addOption = () => {
     const trimmed = newOption.trim();
@@ -51,9 +69,10 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!label.trim()) return;
+    if (!label.trim() || !name.trim()) return;
     onSave({
       type,
+      name: name.trim(),
       label: label.trim(),
       placeholder: placeholder.trim() || undefined,
       required,
@@ -69,16 +88,31 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
         <QuestionTypeSelector value={type} onChange={setType} />
       </div>
 
-      {/* Label */}
-      <div>
-        <label className="label">Enunciado *</label>
-        <input
-          className="input"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Ej: ¿Cuál es el nombre del establecimiento?"
-          required
-        />
+      <div className="grid grid-cols-2 gap-4">
+        {/* Label */}
+        <div className="col-span-2 sm:col-span-1">
+          <label className="label">Enunciado *</label>
+          <input
+            className="input"
+            value={label}
+            onChange={(e) => handleLabelChange(e.target.value)}
+            placeholder="Ej: ¿Cuál es el nombre...?"
+            required
+          />
+        </div>
+
+        {/* Technical Name */}
+        <div className="col-span-2 sm:col-span-1">
+          <label className="label">ID Técnico (name) *</label>
+          <input
+            className="input font-mono text-xs text-blue-400"
+            value={name}
+            onChange={(e) => setName(e.target.value.replace(/\s+/g, '_').toLowerCase())}
+            placeholder="ej: nombre_establecimiento"
+            required
+          />
+          <p className="text-[10px] text-[#484f58] mt-1">Identificador para integración</p>
+        </div>
       </div>
 
       {/* Placeholder (solo para TEXT, TEXTAREA, NUMBER) */}
@@ -128,30 +162,32 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
       )}
 
       {/* Required */}
-      <label className="flex items-center gap-3 cursor-pointer select-none">
-        <div className="relative">
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={required}
-            onChange={(e) => setRequired(e.target.checked)}
-          />
-          <div
-            className={`h-5 w-9 rounded-full transition-colors duration-200 ${required ? 'bg-blue-600' : 'bg-[#30363d]'}`}
-          />
-          <div
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${required ? 'translate-x-4' : 'translate-x-0.5'}`}
-          />
-        </div>
-        <span className="text-sm text-[#c9d1d9]">Campo obligatorio</span>
-      </label>
+      {!['SECTION_HEADER'].includes(type) && (
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={required}
+              onChange={(e) => setRequired(e.target.checked)}
+            />
+            <div
+              className={`h-5 w-9 rounded-full transition-colors duration-200 ${required ? 'bg-blue-600' : 'bg-[#30363d]'}`}
+            />
+            <div
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${required ? 'translate-x-4' : 'translate-x-0.5'}`}
+            />
+          </div>
+          <span className="text-sm text-[#c9d1d9]">Campo obligatorio</span>
+        </label>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2 border-t border-[#30363d]">
         <button type="button" onClick={onCancel} className="btn-secondary">
           Cancelar
         </button>
-        <button type="submit" disabled={isSaving || !label.trim()} className="btn-primary">
+        <button type="submit" disabled={isSaving || !label.trim() || !name.trim()} className="btn-primary">
           {isSaving ? 'Guardando...' : 'Guardar pregunta'}
         </button>
       </div>

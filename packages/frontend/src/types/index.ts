@@ -15,6 +15,10 @@ export enum QuestionType {
   CHECKBOX = 'CHECKBOX',
   DATE = 'DATE',
   TEXTAREA = 'TEXTAREA',
+  FILE = 'FILE',
+  LOCATION = 'LOCATION',
+  SECTION_HEADER = 'SECTION_HEADER',
+  ENTITY_SELECT = 'ENTITY_SELECT',
 }
 
 // ─── Domain interfaces ────────────────────────────────────────────────────────
@@ -45,11 +49,13 @@ export interface Question {
   id: string;
   surveyId: string;
   type: QuestionType;
+  name: string;
   label: string;
   placeholder?: string;
   required: boolean;
   order: number;
   options: string | null; // JSON string
+  config: string | null;  // JSON string
 }
 
 export interface Survey {
@@ -78,11 +84,13 @@ export interface UpdateSurveyPayload extends Partial<CreateSurveyPayload> {}
 
 export interface CreateQuestionPayload {
   type: QuestionType;
+  name: string;
   label: string;
   placeholder?: string;
   required?: boolean;
   order?: number;
   options?: QuestionOption[];
+  config?: Record<string, any>;
 }
 
 export interface UpdateQuestionPayload extends Partial<CreateQuestionPayload> {}
@@ -98,6 +106,15 @@ export const parseOptions = (raw: string | null): QuestionOption[] => {
   }
 };
 
+export const parseConfig = (raw: string | null): Record<string, any> => {
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw) as Record<string, any>;
+  } catch {
+    return {};
+  }
+};
+
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.TEXT]: 'Texto corto',
   [QuestionType.TEXTAREA]: 'Texto largo',
@@ -107,6 +124,10 @@ export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.MULTISELECT]: 'Selección múltiple',
   [QuestionType.RADIO]: 'Opción única (radio)',
   [QuestionType.CHECKBOX]: 'Casillas de verificación',
+  [QuestionType.FILE]: 'Archivo (Imagen/PDF)',
+  [QuestionType.LOCATION]: 'Ubicación (Mapa)',
+  [QuestionType.SECTION_HEADER]: 'Encabezado de Sección',
+  [QuestionType.ENTITY_SELECT]: 'Selector de Entidades',
 };
 
 export const CATEGORY_COLORS: Record<string, { bg: string; accent: string; text: string }> = {

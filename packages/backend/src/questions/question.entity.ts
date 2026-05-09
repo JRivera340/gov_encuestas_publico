@@ -10,6 +10,10 @@ export enum QuestionType {
   CHECKBOX = 'CHECKBOX',
   DATE = 'DATE',
   TEXTAREA = 'TEXTAREA',
+  FILE = 'FILE',
+  LOCATION = 'LOCATION',
+  SECTION_HEADER = 'SECTION_HEADER',
+  ENTITY_SELECT = 'ENTITY_SELECT',
 }
 
 @Entity('questions')
@@ -27,6 +31,13 @@ export class Question {
 
   @Column({ type: 'text' })
   type: QuestionType;
+
+  /**
+   * Identificador técnico del campo (ej: 'cant_personas', 'foto_evidencia')
+   * Útil para que el proyecto externo sepa cómo mapear la respuesta.
+   */
+  @Column({ type: 'text' })
+  name: string;
 
   @Column({ type: 'text' })
   label: string;
@@ -46,4 +57,10 @@ export class Question {
    */
   @Column({ type: 'text', nullable: true })
   options: string | null;
+
+  /**
+   * Configuración adicional en formato JSON (ej: límites de archivos, validaciones, etc.)
+   */
+  @Column({ type: 'text', nullable: true })
+  config: string | null;
 }

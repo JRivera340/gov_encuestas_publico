@@ -1,0 +1,21 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "services": {
+    "backend": {
+      "source": {
+        "root": "packages/backend",
+        "dockerfile": "Dockerfile"
+      },
+      "env": {
+        "PORT": "3000",
+        "NODE_ENV": "production"
+      }
+    },
+    "frontend": {
+      "source": {
+        "root": "packages/frontend",
+        "dockerfile": "Dockerfile"
+      }
+    }
+  }
+}

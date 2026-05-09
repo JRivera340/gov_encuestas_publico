@@ -6,12 +6,17 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsObject,
 } from 'class-validator';
 import { QuestionType } from '../question.entity';
 
 export class CreateQuestionDto {
   @IsEnum(QuestionType)
   type: QuestionType;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
   @IsString()
   @IsNotEmpty()
@@ -36,4 +41,11 @@ export class CreateQuestionDto {
   @IsArray()
   @IsOptional()
   options?: { label: string; value: string }[];
+
+  /**
+   * Additional configuration for the question (e.g. file limits, map settings)
+   */
+  @IsObject()
+  @IsOptional()
+  config?: Record<string, any>;
 }

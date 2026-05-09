@@ -33,6 +33,7 @@ const SortableQuestion: React.FC<SortableQuestionProps> = ({
   };
 
   const options = parseOptions(question.options);
+  const isHeader = question.type === 'SECTION_HEADER';
 
   return (
     <div
@@ -42,7 +43,7 @@ const SortableQuestion: React.FC<SortableQuestionProps> = ({
         isDragging
           ? 'opacity-50 border-blue-500/50 shadow-xl shadow-blue-500/10 scale-[1.02]'
           : 'card-hover'
-      }`}
+      } ${isHeader ? 'bg-blue-500/5 border-blue-500/20' : ''}`}
     >
       {/* Drag handle */}
       <button
@@ -59,19 +60,23 @@ const SortableQuestion: React.FC<SortableQuestionProps> = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-[#484f58]">#{index + 1}</span>
-              <span className="rounded-md bg-[#21262d] border border-[#30363d] px-2 py-0.5 text-[11px] text-[#8b949e]">
-                {QUESTION_TYPE_LABELS[question.type]}
+              {!isHeader && <span className="text-xs font-medium text-[#484f58]">#{index + 1}</span>}
+              <span className={`rounded-md border px-2 py-0.5 text-[11px] ${
+                isHeader ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' : 'bg-[#21262d] border-[#30363d] text-[#8b949e]'
+              }`}>
+                {QUESTION_TYPE_LABELS[question.type as keyof typeof QUESTION_TYPE_LABELS] || question.type}
               </span>
-              {question.required && (
+              {question.required && !isHeader && (
                 <span className="flex items-center gap-1 text-[11px] text-amber-400">
                   <Star className="h-2.5 w-2.5 fill-current" />
                   Requerido
                 </span>
               )}
             </div>
-            <p className="text-sm font-medium text-[#e6edf3]">{question.label}</p>
-            {question.placeholder && (
+            <p className={`font-medium ${isHeader ? 'text-blue-400 text-base' : 'text-sm text-[#e6edf3]'}`}>
+              {question.label}
+            </p>
+            {question.placeholder && !isHeader && (
               <p className="text-xs text-[#484f58] mt-0.5 italic">{question.placeholder}</p>
             )}
             {options.length > 0 && (

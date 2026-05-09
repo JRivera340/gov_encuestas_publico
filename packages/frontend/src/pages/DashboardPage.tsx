@@ -6,8 +6,9 @@ import { categoriesApi } from '../api/categories.api';
 import { surveysApi } from '../api/surveys.api';
 import type { Category, Survey } from '../types';
 import { SurveyStatus } from '../types';
-import { LayoutDashboard, RefreshCw, AlertCircle, Database } from 'lucide-react';
+import { LayoutDashboard, RefreshCw, AlertCircle, Database, Plus } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
+import Modal from '../components/ui/Modal';
 
 const DashboardPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -15,6 +16,10 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const [categoryModal, setCategoryModal] = useState(false);
+  const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [savingCategory, setSavingCategory] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -44,6 +49,24 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategory.name.trim()) return;
+
+    setSavingCategory(true);
+    try {
+      await categoriesApi.create(newCategory);
+      toast('Categoría creada con éxito', 'success');
+      setCategoryModal(false);
+      setNewCategory({ name: '', description: '' });
+      fetchData();
+    } catch (err: any) {
+      toast(err.message || 'Error al crear categoría', 'error');
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
   useEffect(() => { fetchData(); }, []);
 
   const activeCount = surveys.filter((s) => s.status === SurveyStatus.ACTIVE).length;
@@ -64,6 +87,13 @@ const DashboardPage: React.FC = () => {
             )}
             <button onClick={fetchData} className="btn-ghost p-2 rounded-lg" aria-label="Refrescar">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <button 
+              onClick={() => setCategoryModal(true)} 
+              className="btn-primary py-2 px-3 text-xs gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Nueva Categoría
             </button>
           </div>
         }
@@ -123,10 +153,60 @@ const DashboardPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {categories.map((cat) => (
-            <CategoryCard key={cat.id} category={cat} />
+            <CategoryCard key={cat.id} category={cat} onUpdate={fetchData} />
           ))}
         </div>
       )}
+
+      {/* Modal Nueva Categoría */}
+      <Modal 
+        open={categoryModal} 
+        onClose={() => setCategoryModal(false)} 
+        title="Crear Nueva Categoría"
+      >
+        <form onSubmit={handleCreateCategory} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Nombre de la Categoría
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Ej: SALUD, EDUCACION..."
+              value={newCategory.name}
+              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value.toUpperCase() })}
+              required
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Descripción (Opcional)
+            </label>
+            <textarea
+              className="input-field min-h-[100px] resize-none"
+              placeholder="Describe brevemente el propósito de esta categoría"
+              value={newCategory.description}
+              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button 
+              type="button" 
+              onClick={() => setCategoryModal(false)} 
+              className="btn-ghost"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              className="btn-primary px-6" 
+              disabled={savingCategory}
+            >
+              {savingCategory ? 'Guardando...' : 'Crear Categoría'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </Layout>
   );
 };
