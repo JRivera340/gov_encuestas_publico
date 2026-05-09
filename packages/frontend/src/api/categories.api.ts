@@ -1,6 +1,6 @@
 import type { Category } from '../types';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = 'https://backendencuestas-production-d973.up.railway.app';
 
 export const categoriesApi = {
   getAll: async (): Promise<Category[]> => {
