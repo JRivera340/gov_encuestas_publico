@@ -4,10 +4,12 @@
 
 ## Arquitectura
 - **Tipo:** Monorepo (NPM Workspaces)
-- **Backend:** `packages/backend` (NestJS 11, TypeORM, SQLite/better-sqlite3)
+- **Backend:** `packages/backend` (NestJS 11, TypeORM, PostgreSQL/better-sqlite3)
 - **Frontend:** `packages/frontend` (React 19, Vite, TailwindCSS)
-- **BD (dev):** SQLite local → `packages/backend/database.sqlite` (auto-generada)
-- **Puerto backend:** 3000 | **Puerto frontend:** 5173
+- **BD (dev):** SQLite local → `packages/backend/database.sqlite`
+- **BD (prod):** PostgreSQL (Railway)
+- **Puerto backend:** 8080 (Railway) / 3000 (local)
+- **Puerto frontend:** 80 (Railway) / 5173 (local)
 
 ## Modelo de Datos
 
@@ -79,13 +81,33 @@
 | DELETE | /questions/:id | Eliminar pregunta |
 | PATCH | /surveys/:surveyId/questions/reorder | Reordenar preguntas |
 | POST | /seed | Poblar categorías y subcategorías base |
+| GET | / | Healthcheck del backend |
 
-## Pendientes
+## Despliegue en Railway
+
+El proyecto está configurado para un despliegue multi-servicio en Railway:
+
+### Variables de Entorno (Frontend)
+- `VITE_API_URL`: URL pública del backend (ej: `https://backend-xxx.up.railway.app`). **IMPORTANTE:** Se inyecta en tiempo de construcción (Build Time).
+
+### Variables de Entorno (Backend)
+- `DATABASE_URL`: URL de conexión a PostgreSQL.
+- `SYNCHRONIZE`: Setear en `true` para la primera ejecución o cambios de esquema.
+- `PORT`: Railway asigna automáticamente el `8080`.
+
+### Configuración de Servicios
+- **Backend:** Root Directory: `/` | Dockerfile: `packages/backend/Dockerfile` | Port: `8080`.
+- **Frontend:** Root Directory: `/` | Dockerfile: `packages/frontend/Dockerfile` | Port: `80`.
 
 - [ ] **CORS origin:** Restringir al dominio de `gov_espacio_público` en Railway (actualmente `*`)
 - [ ] Autenticación/JWT: No implementado en esta fase
-- [ ] Migración a PostgreSQL cuando se despliegue en Railway (solo cambio de config en `app.module.ts`)
 - [ ] Versionado de encuestas (campo `version` existe, lógica pendiente)
+
+## Historial de Cambios Clave
+- [x] Migración a PostgreSQL para producción.
+- [x] Dockerización del monorepo (Multi-stage builds).
+- [x] Soporte para tipos de pregunta: `LOCATION`, `FILE`, `SECTION_HEADER`, `ENTITY_SELECT`.
+- [x] Sincronización automática de esquema vía env var `SYNCHRONIZE`.
 
 ## Reglas para la IA (Tú)
 1. **Piensa antes de codificar:** Siempre analiza el impacto de un cambio en todo el sistema.
