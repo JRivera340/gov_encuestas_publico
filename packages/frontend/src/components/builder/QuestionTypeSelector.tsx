@@ -9,6 +9,10 @@ import {
   CheckSquare,
   Circle,
   List,
+  FileText,
+  MapPin,
+  Layout,
+  Users,
 } from 'lucide-react';
 
 const ICONS: Record<QuestionType, React.ReactNode> = {
@@ -20,6 +24,10 @@ const ICONS: Record<QuestionType, React.ReactNode> = {
   [QuestionType.MULTISELECT]: <List className="h-4 w-4" />,
   [QuestionType.RADIO]: <Circle className="h-4 w-4" />,
   [QuestionType.CHECKBOX]: <CheckSquare className="h-4 w-4" />,
+  [QuestionType.FILE]: <FileText className="h-4 w-4" />,
+  [QuestionType.LOCATION]: <MapPin className="h-4 w-4" />,
+  [QuestionType.SECTION_HEADER]: <Layout className="h-4 w-4" />,
+  [QuestionType.ENTITY_SELECT]: <Users className="h-4 w-4" />,
 };
 
 interface QuestionTypeSelectorProps {

@@ -1,25 +1,27 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-export enum SurveyStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  DRAFT = 'DRAFT',
-}
+export const SurveyStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DRAFT: 'DRAFT',
+} as const;
+export type SurveyStatus = (typeof SurveyStatus)[keyof typeof SurveyStatus];
 
-export enum QuestionType {
-  TEXT = 'TEXT',
-  NUMBER = 'NUMBER',
-  SELECT = 'SELECT',
-  MULTISELECT = 'MULTISELECT',
-  RADIO = 'RADIO',
-  CHECKBOX = 'CHECKBOX',
-  DATE = 'DATE',
-  TEXTAREA = 'TEXTAREA',
-  FILE = 'FILE',
-  LOCATION = 'LOCATION',
-  SECTION_HEADER = 'SECTION_HEADER',
-  ENTITY_SELECT = 'ENTITY_SELECT',
-}
+export const QuestionType = {
+  TEXT: 'TEXT',
+  NUMBER: 'NUMBER',
+  SELECT: 'SELECT',
+  MULTISELECT: 'MULTISELECT',
+  RADIO: 'RADIO',
+  CHECKBOX: 'CHECKBOX',
+  DATE: 'DATE',
+  TEXTAREA: 'TEXTAREA',
+  FILE: 'FILE',
+  LOCATION: 'LOCATION',
+  SECTION_HEADER: 'SECTION_HEADER',
+  ENTITY_SELECT: 'ENTITY_SELECT',
+} as const;
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
 
 // ─── Domain interfaces ────────────────────────────────────────────────────────
 

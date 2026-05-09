@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { surveysApi } from '../api/surveys.api';
-import type { Survey, Question, QuestionOption } from '../types';
+import type { Survey, Question } from '../types';
 import { QuestionType, parseOptions, parseConfig, CATEGORY_DISPLAY_NAMES, CATEGORY_COLORS } from '../types';
-import { ArrowLeft, Settings, Star, MapPin, Upload, FileText, CheckCircle2, Play, Code, X } from 'lucide-react';
+import { ArrowLeft, Settings, Star, Upload, FileText, CheckCircle2, Play, Code, X } from 'lucide-react';
 
 const SurveyPreviewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -219,7 +219,7 @@ const QuestionPreview: React.FC<{
   interactive: boolean;
   value: any;
   onChange: (val: any) => void;
-}> = ({ question, index, interactive, value, onChange }) => {
+}> = ({ question, interactive, value, onChange }) => {
   const options = parseOptions(question.options);
   const config = parseConfig(question.config);
 
@@ -511,7 +511,6 @@ L.Icon.Default.mergeOptions({
 });
 
 const LocationPreviewMock: React.FC<{ question: Question; interactive: boolean; value: any; onChange: (v: any) => void }> = ({ interactive, value, onChange }) => {
-  const [loading, setLoading] = useState(false);
   const position = value ? [parseFloat(value.lat), parseFloat(value.lng)] : [4.6097, -74.0817];
 
   const MapEvents = () => {

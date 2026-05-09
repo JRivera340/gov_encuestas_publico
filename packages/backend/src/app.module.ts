@@ -24,7 +24,7 @@ import { SeedModule } from './seed/seed.module';
             database: process.env.SQLITE_PATH || 'database.sqlite',
           }),
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: process.env.SYNCHRONIZE === 'true' || process.env.NODE_ENV !== 'production',
     }),
     CategoriesModule,
     SubcategoriesModule,

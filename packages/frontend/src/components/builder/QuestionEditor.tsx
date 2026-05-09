@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Question, QuestionOption, CreateQuestionPayload } from '../../types';
-import { QuestionType, QUESTION_TYPE_LABELS, parseOptions } from '../../types';
+import { QuestionType, parseOptions } from '../../types';
 import QuestionTypeSelector from './QuestionTypeSelector';
 import { Plus, X } from 'lucide-react';
 
