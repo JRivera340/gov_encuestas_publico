@@ -2,18 +2,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Instalar dependencias de compilación
+RUN apk add --no-cache python3 make g++
+
 # Copiar archivos de raíz para manejar el monorepo
 COPY package.json package-lock.json ./
 COPY packages/backend/package.json ./packages/backend/
 
-# Instalar dependencias de compilación para better-sqlite3 y pg
-RUN apk add --no-cache python3 make g++
-
 # Instalar dependencias usando npm workspaces
 RUN npm install
 
-# Copiar código del backend
-COPY packages/backend ./packages/backend
+# Copiar TODO el código para que el contexto sea correcto
+COPY . .
 
 # Construir el backend
 RUN npm run build --workspace=packages/backend
@@ -22,7 +22,6 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar solo lo necesario para ejecución
 COPY --from=builder /app/package.json /app/package-lock.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
