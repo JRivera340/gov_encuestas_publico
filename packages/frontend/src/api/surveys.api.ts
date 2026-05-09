@@ -1,6 +1,7 @@
 import type { Survey, CreateSurveyPayload, UpdateSurveyPayload } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+console.log('Survey API Base URL:', BASE_URL);
 
 export const surveysApi = {
   getAll: async (subcategoryId?: string): Promise<Survey[]> => {
