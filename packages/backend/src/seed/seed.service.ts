@@ -20,11 +20,11 @@ export class SeedService {
   ) {}
 
   async run(): Promise<{ message: string; created: number }> {
-    // LIMPIEZA TOTAL para asegurar nombres frescos
-    await this.questionsRepo.delete({});
-    await this.surveysRepo.delete({});
-    await this.subcategoriesRepo.delete({});
-    await this.categoriesRepo.delete({});
+    // LIMPIEZA TOTAL usando QueryBuilder para evitar el error de "Empty criteria"
+    await this.questionsRepo.createQueryBuilder().delete().execute();
+    await this.surveysRepo.createQueryBuilder().delete().execute();
+    await this.subcategoriesRepo.createQueryBuilder().delete().execute();
+    await this.categoriesRepo.createQueryBuilder().delete().execute();
 
     // 1. Categorías (Nombres exactos del mapeo)
     const catIVC = await this.categoriesRepo.save(this.categoriesRepo.create({ name: 'IVC', description: 'IVC' }));
