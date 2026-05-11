@@ -20,10 +20,6 @@ export class CreateQuestionDto {
 
   @IsString()
   @IsNotEmpty()
-  name: string;
-
-  @IsString()
-  @IsNotEmpty()
   label: string;
 
   @IsBoolean()
