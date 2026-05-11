@@ -19,8 +19,13 @@ export class SurveysController {
   constructor(private readonly service: SurveysService) {}
 
   @Get()
-  findAll(@Query('subcategoryId') subcategoryId?: string) {
-    return this.service.findAll(subcategoryId);
+  findAll(
+    @Query('subcategoryId') subcategoryId?: string,
+    @Query('categoryName') categoryName?: string,
+    @Query('subcategoryName') subcategoryName?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.service.findAll(subcategoryId, categoryName, subcategoryName, status);
   }
 
   @Get(':id')

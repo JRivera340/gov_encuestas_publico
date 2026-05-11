@@ -36,11 +36,14 @@ export class Question {
    * Identificador técnico del campo (ej: 'cant_personas', 'foto_evidencia')
    * Útil para que el proyecto externo sepa cómo mapear la respuesta.
    */
-  @Column({ type: 'text' })
-  name: string;
+  @Column()
+  name: string; // Nombre técnico (ej: licores_adulterados) para integraciones
 
   @Column({ type: 'text' })
   label: string;
+
+  @Column({ default: false })
+  isMetric: boolean; // Indica si este campo es vital para los dashboards
 
   @Column({ type: 'text', nullable: true })
   placeholder: string;

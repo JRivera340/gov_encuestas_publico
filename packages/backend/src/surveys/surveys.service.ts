@@ -15,13 +15,33 @@ export class SurveysService {
     private readonly repo: Repository<Survey>,
   ) {}
 
-  findAll(subcategoryId?: string): Promise<Survey[]> {
-    const where = subcategoryId ? { subcategoryId } : {};
-    return this.repo.find({
-      where,
-      relations: ['subcategory', 'subcategory.category'],
-      order: { createdAt: 'DESC' },
-    });
+  findAll(
+    subcategoryId?: string,
+    categoryName?: string,
+    subcategoryName?: string,
+    status?: string,
+  ): Promise<Survey[]> {
+    const qb = this.repo.createQueryBuilder('survey')
+      .leftJoinAndSelect('survey.subcategory', 'subcategory')
+      .leftJoinAndSelect('survey.questions', 'questions')
+      .leftJoinAndSelect('subcategory.category', 'category')
+      .orderBy('survey.createdAt', 'DESC')
+      .addOrderBy('questions.order', 'ASC');
+
+    if (subcategoryId) {
+      qb.andWhere('survey.subcategoryId = :subcategoryId', { subcategoryId });
+    }
+    if (status) {
+      qb.andWhere('survey.status = :status', { status });
+    }
+    if (categoryName) {
+      qb.andWhere('category.name = :categoryName', { categoryName });
+    }
+    if (subcategoryName) {
+      qb.andWhere('subcategory.name = :subcategoryName', { subcategoryName });
+    }
+
+    return qb.getMany();
   }
 
   async findOne(id: string): Promise<Survey> {
