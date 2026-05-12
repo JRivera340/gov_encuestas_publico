@@ -16,6 +16,19 @@ export enum QuestionType {
   ENTITY_SELECT = 'ENTITY_SELECT',
 }
 
+// Traductor automático de JSON a Texto
+const jsonTransformer = {
+  to: (value: any) => (value ? JSON.stringify(value) : null),
+  from: (value: any) => {
+    if (!value) return null;
+    try {
+      return typeof value === 'string' ? JSON.parse(value) : value;
+    } catch {
+      return value;
+    }
+  },
+};
+
 @Entity('questions')
 export class Question {
   @PrimaryGeneratedColumn('uuid')
@@ -32,18 +45,14 @@ export class Question {
   @Column({ type: 'text' })
   type: QuestionType;
 
-  /**
-   * Identificador técnico del campo (ej: 'cant_personas', 'foto_evidencia')
-   * Útil para que el proyecto externo sepa cómo mapear la respuesta.
-   */
   @Column({ nullable: true })
-  name: string; // Nombre técnico (ej: licores_adulterados) para integraciones
+  name: string;
 
   @Column({ type: 'text' })
   label: string;
 
   @Column({ default: false })
-  isMetric: boolean; // Indica si este campo es vital para los dashboards
+  isMetric: boolean;
 
   @Column({ type: 'text', nullable: true })
   placeholder: string;
@@ -54,16 +63,9 @@ export class Question {
   @Column({ default: 0 })
   order: number;
 
-  /**
-   * JSON string – used for SELECT, MULTISELECT, RADIO, CHECKBOX
-   * Format: [{ label: string; value: string }]
-   */
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'text', nullable: true, transformer: jsonTransformer })
   options: any;
 
-  /**
-   * Configuración adicional en formato JSON (ej: límites de archivos, validaciones, etc.)
-   */
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'text', nullable: true, transformer: jsonTransformer })
   config: any;
 }

@@ -26,26 +26,16 @@ export class QuestionsService {
   }
 
   async create(surveyId: string, dto: CreateQuestionDto): Promise<Question> {
-    const { options, config, ...rest } = dto;
     const question = this.repo.create({
-      ...rest,
+      ...dto,
       surveyId,
-      options: options ? JSON.stringify(options) : null,
-      config: config ? JSON.stringify(config) : null,
     });
     return this.repo.save(question);
   }
 
   async update(id: string, dto: UpdateQuestionDto): Promise<Question> {
     const question = await this.findOne(id);
-    const { options, config, ...rest } = dto;
-    Object.assign(question, rest);
-    if (options !== undefined) {
-      question.options = options ? JSON.stringify(options) : null;
-    }
-    if (config !== undefined) {
-      question.config = config ? JSON.stringify(config) : null;
-    }
+    Object.assign(question, dto);
     return this.repo.save(question);
   }
 
