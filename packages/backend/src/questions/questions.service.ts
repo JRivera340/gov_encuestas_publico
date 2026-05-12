@@ -12,12 +12,20 @@ export class QuestionsService {
     private readonly repo: Repository<Question>,
   ) {}
 
-  private parseQuestion(q: Question) {
-    return {
-      ...q,
-      options: q.options ? JSON.parse(q.options) : [],
-      config: q.config ? JSON.parse(q.config) : {},
-    };
+  private parseQuestion(q: any) {
+    let options = [];
+    let config = {};
+    try {
+      options = q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [];
+    } catch (e) {
+      console.error('Error parsing options', e);
+    }
+    try {
+      config = q.config ? (typeof q.config === 'string' ? JSON.parse(q.config) : q.config) : {};
+    } catch (e) {
+      console.error('Error parsing config', e);
+    }
+    return { ...q, options, config };
   }
 
   async findBySurvey(surveyId: string): Promise<any[]> {

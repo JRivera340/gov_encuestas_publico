@@ -18,11 +18,21 @@ export class SurveysService {
   private parseSurvey(s: any) {
     if (!s) return s;
     if (s.questions && Array.isArray(s.questions)) {
-      s.questions = s.questions.map((q: any) => ({
-        ...q,
-        options: q.options ? JSON.parse(q.options) : [],
-        config: q.config ? JSON.parse(q.config) : {},
-      }));
+      s.questions = s.questions.map((q: any) => {
+        let options = [];
+        let config = {};
+        try {
+          options = q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [];
+        } catch (e) {
+          console.error('Error parsing options for question', q.id, e);
+        }
+        try {
+          config = q.config ? (typeof q.config === 'string' ? JSON.parse(q.config) : q.config) : {};
+        } catch (e) {
+          console.error('Error parsing config for question', q.id, e);
+        }
+        return { ...q, options, config };
+      });
     }
     return s;
   }
