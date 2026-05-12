@@ -32,7 +32,7 @@ const DashboardPage: React.FC = () => {
       setCategories(cats);
       setSurveys(survs);
     } catch {
-      setError('No se pudo conectar al backend. ¿Está corriendo en localhost:3000?');
+      setError('Error de conexión con el servidor de Railway. Verifica que el backend esté activo.');
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,7 @@ const DashboardPage: React.FC = () => {
 
   const runSeed = async () => {
     try {
-      const res = await fetch('http://localhost:3000/seed', { method: 'POST' });
+      const res = await fetch('https://backendencuestas-production-d973.up.railway.app/seed', { method: 'POST' });
       const data = await res.json();
       toast(`Seed ejecutado: ${data.created} registros creados`, 'success');
       fetchData();
