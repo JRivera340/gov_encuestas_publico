@@ -16,6 +16,7 @@ const OPTION_TYPES: QuestionType[] = [
   QuestionType.MULTISELECT,
   QuestionType.RADIO,
   QuestionType.CHECKBOX,
+  QuestionType.ENTITY_SELECT,
 ];
 
 const QuestionEditor: React.FC<QuestionEditorProps> = ({

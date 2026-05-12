@@ -56,8 +56,8 @@ export interface Question {
   placeholder?: string;
   required: boolean;
   order: number;
-  options: string | null; // JSON string
-  config: string | null;  // JSON string
+  options: any; // JSON string or Object
+  config: any;  // JSON string or Object
 }
 
 export interface Survey {
@@ -99,19 +99,21 @@ export interface UpdateQuestionPayload extends Partial<CreateQuestionPayload> {}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const parseOptions = (raw: string | null): QuestionOption[] => {
+export const parseOptions = (raw: any): QuestionOption[] => {
   if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
   try {
-    return JSON.parse(raw) as QuestionOption[];
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch {
     return [];
   }
 };
 
-export const parseConfig = (raw: string | null): Record<string, any> => {
+export const parseConfig = (raw: any): Record<string, any> => {
   if (!raw) return {};
+  if (typeof raw === 'object') return raw;
   try {
-    return JSON.parse(raw) as Record<string, any>;
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch {
     return {};
   }
