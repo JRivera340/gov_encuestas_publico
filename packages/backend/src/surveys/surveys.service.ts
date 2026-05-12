@@ -5,7 +5,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Survey } from './survey.entity';
-import { CreateSurveyDto } from './dto/create-question.dto';
+import { CreateSurveyDto } from './dto/create-survey.dto';
 import { UpdateSurveyDto } from './dto/update-survey.dto';
 
 @Injectable()
@@ -15,14 +15,14 @@ export class SurveysService {
     private readonly repo: Repository<Survey>,
   ) {}
 
-  private parseSurvey(s: Survey) {
+  private parseSurvey(s: any) {
     if (!s) return s;
-    if (s.questions) {
-      s.questions = s.questions.map(q => ({
+    if (s.questions && Array.isArray(s.questions)) {
+      s.questions = s.questions.map((q: any) => ({
         ...q,
-        options: q.options ? JSON.parse(q.options as any) : [],
-        config: q.config ? JSON.parse(q.config as any) : {},
-      })) as any;
+        options: q.options ? JSON.parse(q.options) : [],
+        config: q.config ? JSON.parse(q.config) : {},
+      }));
     }
     return s;
   }
@@ -62,17 +62,17 @@ export class SurveysService {
     return this.parseSurvey(survey);
   }
 
-  async create(dto: any): Promise<Survey> {
+  async create(dto: CreateSurveyDto): Promise<Survey> {
     const survey = this.repo.create(dto);
     return this.repo.save(survey);
   }
 
-  async update(id: string, dto: any): Promise<Survey> {
+  async update(id: string, dto: UpdateSurveyDto): Promise<Survey> {
     const survey = await this.repo.findOne({ where: { id } });
     if (!survey) throw new NotFoundException('Encuesta no encontrada');
     Object.assign(survey, dto);
-    const saved = await this.repo.save(survey);
-    return this.findOne(saved.id);
+    await this.repo.save(survey);
+    return this.findOne(id);
   }
 
   async remove(id: string): Promise<void> {
