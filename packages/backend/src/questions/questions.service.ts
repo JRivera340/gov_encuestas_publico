@@ -12,64 +12,32 @@ export class QuestionsService {
     private readonly repo: Repository<Question>,
   ) {}
 
-  private parseQuestion(q: any) {
-    let options = [];
-    let config = {};
-    try {
-      options = q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [];
-    } catch (e) {
-      console.error('Error parsing options', e);
-    }
-    try {
-      config = q.config ? (typeof q.config === 'string' ? JSON.parse(q.config) : q.config) : {};
-    } catch (e) {
-      console.error('Error parsing config', e);
-    }
-    return { ...q, options, config };
-  }
-
-  async findBySurvey(surveyId: string): Promise<any[]> {
-    const questions = await this.repo.find({
+  async findBySurvey(surveyId: string): Promise<Question[]> {
+    return this.repo.find({
       where: { surveyId },
       order: { order: 'ASC' },
     });
-    return questions.map(q => this.parseQuestion(q));
   }
 
-  async findOne(id: string): Promise<any> {
+  async findOne(id: string): Promise<Question> {
     const q = await this.repo.findOne({ where: { id } });
     if (!q) throw new NotFoundException(`Pregunta con ID ${id} no encontrada`);
-    return this.parseQuestion(q);
+    return q;
   }
 
-  async create(surveyId: string, dto: CreateQuestionDto): Promise<any> {
-    const { options, config, ...rest } = dto;
+  async create(surveyId: string, dto: CreateQuestionDto): Promise<Question> {
     const question = this.repo.create({
-      ...rest,
+      ...dto,
       surveyId,
-      options: options ? JSON.stringify(options) : null,
-      config: config ? JSON.stringify(config) : null,
     });
-    const saved = await this.repo.save(question);
-    return this.parseQuestion(saved);
+    return this.repo.save(question);
   }
 
-  async update(id: string, dto: UpdateQuestionDto): Promise<any> {
+  async update(id: string, dto: UpdateQuestionDto): Promise<Question> {
     const question = await this.repo.findOne({ where: { id } });
     if (!question) throw new NotFoundException(`Pregunta no encontrada`);
-
-    const { options, config, ...rest } = dto;
-    Object.assign(question, rest);
-
-    if (options !== undefined) {
-      question.options = options ? JSON.stringify(options) : null;
-    }
-    if (config !== undefined) {
-      question.config = config ? JSON.stringify(config) : null;
-    }
-
-    const saved = await this.repo.save(question);
-    return this.parseQuestion(saved);
+    Object.assign(question, dto);
+    return this.repo.save(question);
   }
 
   async remove(id: string): Promise<void> {

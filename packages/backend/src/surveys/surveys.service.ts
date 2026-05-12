@@ -15,28 +15,6 @@ export class SurveysService {
     private readonly repo: Repository<Survey>,
   ) {}
 
-  private parseSurvey(s: any) {
-    if (!s) return s;
-    if (s.questions && Array.isArray(s.questions)) {
-      s.questions = s.questions.map((q: any) => {
-        let options = [];
-        let config = {};
-        try {
-          options = q.options ? (typeof q.options === 'string' ? JSON.parse(q.options) : q.options) : [];
-        } catch (e) {
-          console.error('Error parsing options for question', q.id, e);
-        }
-        try {
-          config = q.config ? (typeof q.config === 'string' ? JSON.parse(q.config) : q.config) : {};
-        } catch (e) {
-          console.error('Error parsing config for question', q.id, e);
-        }
-        return { ...q, options, config };
-      });
-    }
-    return s;
-  }
-
   async findAll(
     subcategoryId?: string,
     categoryName?: string,
@@ -55,8 +33,7 @@ export class SurveysService {
     if (categoryName) qb.andWhere('category.name = :categoryName', { categoryName });
     if (subcategoryName) qb.andWhere('subcategory.name = :subcategoryName', { subcategoryName });
 
-    const surveys = await qb.getMany();
-    return surveys.map(s => this.parseSurvey(s));
+    return qb.getMany();
   }
 
   async findOne(id: string): Promise<Survey> {
@@ -69,7 +46,7 @@ export class SurveysService {
       .getOne();
 
     if (!survey) throw new NotFoundException(`Encuesta con ID ${id} no encontrada`);
-    return this.parseSurvey(survey);
+    return survey;
   }
 
   async create(dto: CreateSurveyDto): Promise<Survey> {
@@ -81,7 +58,6 @@ export class SurveysService {
     const survey = await this.repo.findOne({ where: { id } });
     if (!survey) throw new NotFoundException('Encuesta no encontrada');
 
-    // Si se va a activar, desactivar las otras del mismo subtipo
     if (dto.status === 'ACTIVE') {
       await this.repo.update(
         { subcategoryId: survey.subcategoryId, status: 'ACTIVE' as any },

@@ -50,9 +50,37 @@ export class Question {
   @Column({ default: 0 })
   order: number;
 
-  @Column({ type: 'text', nullable: true })
-  options: string | null;
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to: (value: any) => (value ? JSON.stringify(value) : null),
+      from: (value: any) => {
+        if (!value) return [];
+        try {
+          return typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          return [];
+        }
+      },
+    },
+  })
+  options: any;
 
-  @Column({ type: 'text', nullable: true })
-  config: string | null;
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to: (value: any) => (value ? JSON.stringify(value) : null),
+      from: (value: any) => {
+        if (!value) return {};
+        try {
+          return typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          return {};
+        }
+      },
+    },
+  })
+  config: any;
 }
