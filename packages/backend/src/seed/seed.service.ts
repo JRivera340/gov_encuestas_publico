@@ -44,8 +44,8 @@ export class SeedService {
     const questions: Partial<Question>[] = [
       // SECCIÓN 1
       { type: QuestionType.SECTION_HEADER, label: '1. Tipo de Operativo', order: 1, name: 'sec_1' },
-      { type: QuestionType.TEXT, label: 'Categoría', name: 'categoria_meta', config: { disabled: true, defaultValue: 'IVC' }, order: 2 },
-      { type: QuestionType.TEXT, label: 'Subtipo', name: 'subtipo_meta', config: { disabled: true, defaultValue: 'Establecimientos de Comercio' }, order: 3 },
+      { type: QuestionType.TEXT, label: 'Categoría', name: 'categoria_meta', config: JSON.stringify({ disabled: true, defaultValue: 'IVC' }), order: 2 },
+      { type: QuestionType.TEXT, label: 'Subtipo', name: 'subtipo_meta', config: JSON.stringify({ disabled: true, defaultValue: 'Establecimientos de Comercio' }), order: 3 },
 
       // SECCIÓN 2 (Datos del Operativo)
       { type: QuestionType.SECTION_HEADER, label: '2. Datos del Operativo', order: 4, name: 'sec_2' },
@@ -78,7 +78,7 @@ export class SeedService {
 
       // SECCIÓN 6
       { type: QuestionType.SECTION_HEADER, label: '6. Evidencia Fotográfica', order: 25, name: 'sec_6' },
-      { type: QuestionType.FILE, label: 'Fotos de Evidencia', name: 'fotos_evidencia', config: { maxFiles: 5, maxSizeMB: 10 }, order: 26 },
+      { type: QuestionType.FILE, label: 'Fotos de Evidencia', name: 'fotos_evidencia', config: JSON.stringify({ maxFiles: 5, maxSizeMB: 10 }), order: 26 },
 
       // SECCIÓN 7
       { type: QuestionType.SECTION_HEADER, label: '7. Entidades', order: 27, name: 'sec_7' },
@@ -99,7 +99,7 @@ export class SeedService {
 
       // SECCIÓN 9
       { type: QuestionType.SECTION_HEADER, label: '9. Acta del Operativo', order: 32, name: 'sec_9' },
-      { type: QuestionType.FILE, label: 'Acta del Operativo (PDF)', name: 'acta_pdf', config: { accept: 'application/pdf' }, order: 33 },
+      { type: QuestionType.FILE, label: 'Acta del Operativo (PDF)', name: 'acta_pdf', config: JSON.stringify({ accept: 'application/pdf' }), order: 33 },
     ];
 
     const survey = await this.surveysRepo.save(this.surveysRepo.create({
