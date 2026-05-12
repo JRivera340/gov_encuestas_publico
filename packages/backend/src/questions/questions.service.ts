@@ -26,6 +26,7 @@ export class QuestionsService {
   }
 
   async create(surveyId: string, dto: CreateQuestionDto): Promise<Question> {
+    console.log('DEBUG: Creating question with options:', dto.options);
     const question = this.repo.create({
       ...dto,
       surveyId,
@@ -34,6 +35,7 @@ export class QuestionsService {
   }
 
   async update(id: string, dto: UpdateQuestionDto): Promise<Question> {
+    console.log('DEBUG: Updating question with options:', dto.options);
     const question = await this.findOne(id);
     Object.assign(question, dto);
     return this.repo.save(question);
