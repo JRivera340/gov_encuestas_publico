@@ -58,12 +58,12 @@ export class Question {
    * JSON string – used for SELECT, MULTISELECT, RADIO, CHECKBOX
    * Format: [{ label: string; value: string }]
    */
-  @Column({ type: 'simple-json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   options: any;
 
   /**
    * Configuración adicional en formato JSON (ej: límites de archivos, validaciones, etc.)
    */
-  @Column({ type: 'simple-json', nullable: true })
+  @Column({ type: 'jsonb', nullable: true })
   config: any;
 }
