@@ -177,6 +177,22 @@ const SurveysPage: React.FC = () => {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
+                        onClick={async () => {
+                          const newStatus = survey.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+                          try {
+                            const updated = await surveysApi.update(survey.id, { status: newStatus as any });
+                            setSurveys(prev => prev.map(s => s.id === survey.id ? updated : s));
+                            toast(`Encuesta ${newStatus === 'ACTIVE' ? 'activada' : 'desactivada'}`, 'success');
+                          } catch {
+                            toast('Error al cambiar estado', 'error');
+                          }
+                        }}
+                        className={`btn-ghost p-1.5 rounded-lg ${survey.status === 'ACTIVE' ? 'text-green-400' : 'text-[#484f58]'}`}
+                        title={survey.status === 'ACTIVE' ? 'Desactivar' : 'Activar'}
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                      </button>
+                      <button
                         onClick={() => navigate(`/surveys/${survey.id}/preview`)}
                         className="btn-ghost p-1.5 rounded-lg"
                         title="Vista previa"
@@ -186,9 +202,9 @@ const SurveysPage: React.FC = () => {
                       <button
                         onClick={() => navigate(`/surveys/${survey.id}/builder`)}
                         className="btn-ghost p-1.5 rounded-lg"
-                        title="Editar"
+                        title="Constructor"
                       >
-                        <Settings className="h-3.5 w-3.5" />
+                        <ClipboardList className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(survey.id)}

@@ -45,10 +45,14 @@ export class SurveysService {
   }
 
   async findOne(id: string): Promise<Survey> {
-    const survey = await this.repo.findOne({
-      where: { id },
-      relations: ['subcategory', 'subcategory.category'],
-    });
+    const survey = await this.repo.createQueryBuilder('survey')
+      .leftJoinAndSelect('survey.subcategory', 'subcategory')
+      .leftJoinAndSelect('subcategory.category', 'category')
+      .leftJoinAndSelect('survey.questions', 'questions')
+      .where('survey.id = :id', { id })
+      .orderBy('questions.order', 'ASC')
+      .getOne();
+
     if (!survey) throw new NotFoundException(`Encuesta con ID ${id} no encontrada`);
     return survey;
   }
