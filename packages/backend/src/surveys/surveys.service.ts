@@ -80,6 +80,15 @@ export class SurveysService {
   async update(id: string, dto: UpdateSurveyDto): Promise<Survey> {
     const survey = await this.repo.findOne({ where: { id } });
     if (!survey) throw new NotFoundException('Encuesta no encontrada');
+
+    // Si se va a activar, desactivar las otras del mismo subtipo
+    if (dto.status === 'ACTIVE') {
+      await this.repo.update(
+        { subcategoryId: survey.subcategoryId, status: 'ACTIVE' as any },
+        { status: 'DRAFT' as any }
+      );
+    }
+
     Object.assign(survey, dto);
     await this.repo.save(survey);
     return this.findOne(id);
