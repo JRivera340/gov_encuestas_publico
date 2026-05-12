@@ -21,9 +21,6 @@ async function bootstrap() {
     }),
   );
 
-  const seedService = app.get(SeedService);
-  await seedService.run();
-
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Backend corriendo en puerto ${process.env.PORT ?? 3000}`);
 }
