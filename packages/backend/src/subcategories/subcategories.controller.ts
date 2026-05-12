@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, NotFoundException, Query } from '@nestjs/common';
 import { SubcategoriesService } from './subcategories.service';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
@@ -8,8 +8,8 @@ export class SubcategoriesController {
   constructor(private readonly service: SubcategoriesService) {}
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query('categoryName') categoryName?: string) {
+    return this.service.findAll(categoryName);
   }
 
   @Get('by-category/:categoryId')

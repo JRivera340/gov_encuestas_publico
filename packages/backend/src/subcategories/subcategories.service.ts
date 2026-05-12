@@ -12,11 +12,16 @@ export class SubcategoriesService {
     private readonly repo: Repository<Subcategory>,
   ) {}
 
-  findAll(): Promise<Subcategory[]> {
-    return this.repo.find({ 
-      relations: ['category'],
-      order: { name: 'ASC' }
-    });
+  async findAll(categoryName?: string): Promise<Subcategory[]> {
+    const qb = this.repo.createQueryBuilder('subcategory')
+      .leftJoinAndSelect('subcategory.category', 'category');
+
+    if (categoryName) {
+      qb.andWhere('category.name = :categoryName', { categoryName });
+    }
+
+    qb.orderBy('subcategory.name', 'ASC');
+    return qb.getMany();
   }
 
   findOne(id: string): Promise<Subcategory | null> {
