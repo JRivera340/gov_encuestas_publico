@@ -82,11 +82,7 @@ export class SeedService {
 
       // SECCIÓN 7
       { type: QuestionType.SECTION_HEADER, label: '7. Entidades', order: 27, name: 'sec_7' },
-      { type: QuestionType.SELECT, label: 'Entidad responsable', name: 'entidad_responsable', options: JSON.stringify([
-        { label: 'Secretaría de Gobierno', value: 'gobierno' },
-        { label: 'Policía Nacional', value: 'policia' },
-        { label: 'UAESP', value: 'uaesp' }
-      ]), order: 28 },
+      { type: QuestionType.ENTITY_SELECT, label: 'Entidad responsable', name: 'entidad_responsable', order: 28 },
       { type: QuestionType.MULTISELECT, label: 'Entidades acompañantes', name: 'entidades_acompanantes', options: JSON.stringify([
         { label: 'UAESP', value: 'uaesp' },
         { label: 'Policía Nacional', value: 'policia' },
