@@ -79,8 +79,8 @@ const DashboardPage: React.FC = () => {
         subtitle="Vista general del módulo de encuestas"
         actions={
           <div className="flex items-center gap-2">
-            {categories.length === 0 && !loading && (
-              <button onClick={runSeed} className="btn-secondary text-xs gap-1.5">
+            {!loading && (
+              <button onClick={runSeed} className="btn-secondary text-xs gap-1.5" title="Reiniciar base de datos">
                 <Database className="h-3.5 w-3.5" />
                 Inicializar datos
               </button>
