@@ -71,14 +71,32 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!label.trim() || !name.trim()) return;
+
+    let finalOptions = [...options];
+    const trimmedNew = newOption.trim();
+    if (needsOptions && trimmedNew) {
+      finalOptions.push({
+        label: trimmedNew,
+        value: trimmedNew.toLowerCase().replace(/\s+/g, '_'),
+      });
+    }
+
     onSave({
       type,
       name: name.trim(),
       label: label.trim(),
       placeholder: placeholder.trim() || undefined,
       required,
-      options: needsOptions ? options : undefined,
+      options: needsOptions ? finalOptions : undefined,
     });
+  };
+
+  const updateOptionLabel = (index: number, newLabel: string) => {
+    setOptions((prev) =>
+      prev.map((opt, i) =>
+        i === index ? { ...opt, label: newLabel } : opt
+      )
+    );
   };
 
   return (
@@ -136,7 +154,11 @@ const QuestionEditor: React.FC<QuestionEditorProps> = ({
           <div className="space-y-2 mb-2">
             {options.map((opt, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="flex-1 input py-1.5 text-xs">{opt.label}</span>
+                <input
+                  className="flex-1 input py-1.5 text-xs"
+                  value={opt.label}
+                  onChange={(e) => updateOptionLabel(i, e.target.value)}
+                />
                 <button
                   type="button"
                   onClick={() => removeOption(i)}
