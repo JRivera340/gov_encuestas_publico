@@ -20,96 +20,88 @@ export class SeedService {
   ) {}
 
   async run(): Promise<{ message: string; created: number }> {
-    // LIMPIEZA TOTAL usando QueryBuilder para evitar el error de "Empty criteria"
     await this.questionsRepo.createQueryBuilder().delete().execute();
     await this.surveysRepo.createQueryBuilder().delete().execute();
     await this.subcategoriesRepo.createQueryBuilder().delete().execute();
     await this.categoriesRepo.createQueryBuilder().delete().execute();
 
-    // 1. Categorías (Nombres exactos del mapeo)
     const catIVC = await this.categoriesRepo.save(this.categoriesRepo.create({ name: 'IVC', description: 'IVC' }));
     const catEP = await this.categoriesRepo.save(this.categoriesRepo.create({ name: 'ESPACIO_PUBLICO', description: 'Espacio Público' }));
     const catAMB = await this.categoriesRepo.save(this.categoriesRepo.create({ name: 'AMBIENTAL', description: 'Ambiental' }));
 
-    // 2. Subcategorías (Nombres EXACTOS que usa el fetch de la otra IA)
-    
-    // IVC - Establecimiento de comercio
+    // IVC - Establecimiento de comercio (FULL FORM)
     const subIvcEst = await this.subcategoriesRepo.save(this.subcategoriesRepo.create({ 
       name: 'Establecimiento de comercio', 
       categoryId: catIVC.id 
     }));
-    await this.seedSurvey(subIvcEst.id, 'IVC - Establecimientos', [
-      { name: 'establecimientosVisitados', type: QuestionType.NUMBER, label: 'Establecimientos Visitados', isMetric: true },
-      { name: 'sellamientos', type: QuestionType.CHECKBOX, label: 'Sellamientos', isMetric: true },
-      { name: 'incautaciones', type: QuestionType.NUMBER, label: 'Incautaciones', isMetric: true },
-      { name: 'licoresAdulterados', type: QuestionType.NUMBER, label: 'Licores Adulterados', isMetric: true },
-      { name: 'armasCortopunzantes', type: QuestionType.NUMBER, label: 'Armas Cortopunzantes', isMetric: true },
-      { name: 'armasFuegoMunicionTraumaticas', type: QuestionType.NUMBER, label: 'Armas de Fuego / Traumáticas', isMetric: true },
-      { name: 'personasSensibilizadas', type: QuestionType.NUMBER, label: 'Personas Sensibilizadas', isMetric: true },
-      { name: 'menoresEdad', type: QuestionType.NUMBER, label: 'Menores de Edad', isMetric: true },
-      { name: 'kgAproximadoPolvora', type: QuestionType.NUMBER, label: 'Kg Polvora', isMetric: true },
-      { name: 'gramosSpa', type: QuestionType.NUMBER, label: 'Gramos SPA', isMetric: true },
-      { name: 'personasTrasladadasCtp', type: QuestionType.NUMBER, label: 'Personas trasladadas CTP', isMetric: true },
-      { name: 'personasCapturadas', type: QuestionType.NUMBER, label: 'Personas Capturadas', isMetric: true },
-      { name: 'vendedoresInformalesRetirados', type: QuestionType.NUMBER, label: 'Vendedores Informales Retirados', isMetric: true },
-      { name: 'vendedoresInformalesIntervenidos', type: QuestionType.NUMBER, label: 'Vendedores Informales Intervenidos', isMetric: true },
-    ]);
+    await this.seedFullIVCSurvey(subIvcEst.id);
 
-    // IVC - Estacionamiento (Así lo tiene mapeado ella para Parqueaderos)
-    const subIvcPar = await this.subcategoriesRepo.save(this.subcategoriesRepo.create({ 
-      name: 'Estacionamiento', 
-      categoryId: catIVC.id 
-    }));
-    await this.seedSurvey(subIvcPar.id, 'IVC - Parqueaderos', [
-      { name: 'sellamientos', type: QuestionType.CHECKBOX, label: 'Sellamientos', isMetric: true },
-      { name: 'vehiculosReceptados', type: QuestionType.NUMBER, label: 'Vehículos Receptados', isMetric: true },
-    ]);
-
-    // Espacio Público - 1801
-    const subEP1801 = await this.subcategoriesRepo.save(this.subcategoriesRepo.create({ 
-      name: '1801', 
-      categoryId: catEP.id 
-    }));
-    await this.seedSurvey(subEP1801.id, 'Espacio Público - 1801', [
-      { name: 'estructurasNoConvencionales', type: QuestionType.NUMBER, label: 'Estructuras No Convencionales', isMetric: true },
-      { name: 'cambuches', type: QuestionType.NUMBER, label: 'Cambuches', isMetric: true },
-      { name: 'cachivacherosIntervenidos', type: QuestionType.NUMBER, label: 'Cachivacheros Intervenidos', isMetric: true },
-      { name: 'comparendos', type: QuestionType.NUMBER, label: 'Comparendos', isMetric: true },
-      { name: 'armasCortopunzantes', type: QuestionType.NUMBER, label: 'Armas Cortopunzantes', isMetric: true },
-      { name: 'armasFuego', type: QuestionType.NUMBER, label: 'Armas de Fuego', isMetric: true },
-      { name: 'mendicidad', type: QuestionType.NUMBER, label: 'Mendicidad', isMetric: true },
-      { name: 'trasladadosCtp', type: QuestionType.NUMBER, label: 'Trasladados CTP', isMetric: true },
-      { name: 'capturados', type: QuestionType.NUMBER, label: 'Capturados', isMetric: true },
-      { name: 'personasSensibilizadas', type: QuestionType.NUMBER, label: 'Personas Sensibilizadas', isMetric: true },
-      { name: 'kgMercanciaIncautada', type: QuestionType.NUMBER, label: 'Kg Mercancía Incautada', isMetric: true },
-      { name: 'pipetasIncautadas', type: QuestionType.NUMBER, label: 'Pipetas Incautadas', isMetric: true },
-      { name: 'bicicletasRecuperadas', type: QuestionType.NUMBER, label: 'Bicicletas Recuperadas', isMetric: true },
-      { name: 'celularesRecuperados', type: QuestionType.NUMBER, label: 'Celulares Recuperados', isMetric: true },
-      { name: 'carretasIncautadas', type: QuestionType.NUMBER, label: 'Carretas Incautadas', isMetric: true },
-      { name: 'vendedoresInformalesRetirados', type: QuestionType.NUMBER, label: 'Vendedores Informales Retirados', isMetric: true },
-      { name: 'vendedoresInformalesIntervenidos', type: QuestionType.NUMBER, label: 'Vendedores Informales Intervenidos', isMetric: true },
-      { name: 'm2RecuperadosEspacioPublico', type: QuestionType.NUMBER, label: 'M2 Recuperados', isMetric: true },
-    ]);
-
-    // Ambiental - Ambiente (Así lo tiene mapeado ella para AMBIENTAL)
-    const subAmb = await this.subcategoriesRepo.save(this.subcategoriesRepo.create({ 
-      name: 'Ambiente', 
-      categoryId: catAMB.id 
-    }));
-    await this.seedSurvey(subAmb.id, 'Ambiental - General', [
-      { name: 'puntosCriticosEmergentesAtendidos', type: QuestionType.NUMBER, label: 'Puntos Críticos Atendidos', isMetric: true },
-      { name: 'comparendosPedagogicos', type: QuestionType.NUMBER, label: 'Comparendos Pedagógicos', isMetric: true },
-      { name: 'comparendos', type: QuestionType.NUMBER, label: 'Comparendos', isMetric: true },
-      { name: 'personasSensibilizadas', type: QuestionType.NUMBER, label: 'Personas Sensibilizadas', isMetric: true },
-      { name: 'huertas', type: QuestionType.NUMBER, label: 'Huertas', isMetric: true },
-      { name: 'kgMaterialResiduosRecolectados', type: QuestionType.NUMBER, label: 'Kg Residuos Recolectados', isMetric: true },
-      { name: 'm2RecuperadosEspacioPublico', type: QuestionType.NUMBER, label: 'M2 Recuperados', isMetric: true },
-    ]);
-
-    return { message: 'Seed total completado con éxito', created: 4 };
+    return { message: 'Seed de Formulario Completo ejecutado con éxito', created: 1 };
   }
 
-  private async seedSurvey(subcategoryId: string, title: string, questions: any[]) {
+  private async seedFullIVCSurvey(subcategoryId: string) {
+    const title = 'IVC - Establecimientos de Comercio';
+    const questions: Partial<Question>[] = [
+      // SECCIÓN 1
+      { type: QuestionType.SECTION_HEADER, label: '1. Tipo de Operativo', order: 1, name: 'sec_1' },
+      { type: QuestionType.TEXT, label: 'Categoría', name: 'categoria_meta', config: { disabled: true, defaultValue: 'IVC' }, order: 2 },
+      { type: QuestionType.TEXT, label: 'Subtipo', name: 'subtipo_meta', config: { disabled: true, defaultValue: 'Establecimientos de Comercio' }, order: 3 },
+
+      // SECCIÓN 2 (Datos del Operativo)
+      { type: QuestionType.SECTION_HEADER, label: '2. Datos del Operativo', order: 4, name: 'sec_2' },
+      { name: 'establecimientosVisitados', type: QuestionType.NUMBER, label: 'Establecimientos Visitados', isMetric: true, order: 5 },
+      { name: 'sellamientos', type: QuestionType.CHECKBOX, label: 'Sellamientos', isMetric: true, order: 6 },
+      { name: 'incautaciones', type: QuestionType.NUMBER, label: 'Incautaciones', isMetric: true, order: 7 },
+      { name: 'licoresAdulterados', type: QuestionType.NUMBER, label: 'Licores Adulterados', isMetric: true, order: 8 },
+      { name: 'armasCortopunzantes', type: QuestionType.NUMBER, label: 'Armas Cortopunzantes', isMetric: true, order: 9 },
+      { name: 'armasFuegoMunicionTraumaticas', type: QuestionType.NUMBER, label: 'Armas de Fuego / Traumáticas', isMetric: true, order: 10 },
+      { name: 'personasSensibilizadas', type: QuestionType.NUMBER, label: 'Personas Sensibilizadas', isMetric: true, order: 11 },
+      { name: 'menoresEdad', type: QuestionType.NUMBER, label: 'Menores de Edad', isMetric: true, order: 12 },
+      { name: 'kgAproximadoPolvora', type: QuestionType.NUMBER, label: 'Kg Polvora', isMetric: true, order: 13 },
+      { name: 'gramosSpa', type: QuestionType.NUMBER, label: 'Gramos SPA', isMetric: true, order: 14 },
+      { name: 'personasTrasladadasCtp', type: QuestionType.NUMBER, label: 'Personas trasladadas CTP', isMetric: true, order: 15 },
+      { name: 'personasCapturadas', type: QuestionType.NUMBER, label: 'Personas Capturadas', isMetric: true, order: 16 },
+      { name: 'vendedoresInformalesRetirados', type: QuestionType.NUMBER, label: 'Vendedores Informales Retirados', isMetric: true, order: 17 },
+      { name: 'vendedoresInformalesIntervenidos', type: QuestionType.NUMBER, label: 'Vendedores Informales Intervenidos', isMetric: true, order: 18 },
+
+      // SECCIÓN 3
+      { type: QuestionType.SECTION_HEADER, label: '3. Fecha y Hora', order: 19, name: 'sec_3' },
+      { type: QuestionType.DATE, label: 'Fecha y hora del operativo', name: 'fecha_operativo', required: true, order: 20 },
+
+      // SECCIÓN 4
+      { type: QuestionType.SECTION_HEADER, label: '4. Ubicación', order: 21, name: 'sec_4' },
+      { type: QuestionType.LOCATION, label: 'Ubicación y Barrio', name: 'ubicacion_mapa', required: true, order: 22 },
+
+      // SECCIÓN 5
+      { type: QuestionType.SECTION_HEADER, label: '5. Descripción', order: 23, name: 'sec_5' },
+      { type: QuestionType.TEXTAREA, label: 'Descripción general', name: 'descripcion_general', required: true, order: 24 },
+
+      // SECCIÓN 6
+      { type: QuestionType.SECTION_HEADER, label: '6. Evidencia Fotográfica', order: 25, name: 'sec_6' },
+      { type: QuestionType.FILE, label: 'Fotos de Evidencia', name: 'fotos_evidencia', config: { maxFiles: 5, maxSizeMB: 10 }, order: 26 },
+
+      // SECCIÓN 7
+      { type: QuestionType.SECTION_HEADER, label: '7. Entidades', order: 27, name: 'sec_7' },
+      { type: QuestionType.SELECT, label: 'Entidad responsable', name: 'entidad_responsable', options: JSON.stringify([
+        { label: 'Secretaría de Gobierno', value: 'gobierno' },
+        { label: 'Policía Nacional', value: 'policia' },
+        { label: 'UAESP', value: 'uaesp' }
+      ]), order: 28 },
+      { type: QuestionType.MULTISELECT, label: 'Entidades acompañantes', name: 'entidades_acompanantes', options: JSON.stringify([
+        { label: 'UAESP', value: 'uaesp' },
+        { label: 'Policía Nacional', value: 'policia' },
+        { label: 'Ejército Nacional', value: 'ejercito' }
+      ]), order: 29 },
+
+      // SECCIÓN 8
+      { type: QuestionType.SECTION_HEADER, label: '8. Operativo en Grupo', order: 30, name: 'sec_8' },
+      { type: QuestionType.CHECKBOX, label: '¿Este operativo fue realizado en grupo?', name: 'en_grupo', order: 31 },
+
+      // SECCIÓN 9
+      { type: QuestionType.SECTION_HEADER, label: '9. Acta del Operativo', order: 32, name: 'sec_9' },
+      { type: QuestionType.FILE, label: 'Acta del Operativo (PDF)', name: 'acta_pdf', config: { accept: 'application/pdf' }, order: 33 },
+    ];
+
     const survey = await this.surveysRepo.save(this.surveysRepo.create({
       title,
       status: SurveyStatus.ACTIVE,
@@ -117,12 +109,8 @@ export class SeedService {
       version: 1,
     }));
 
-    for (let i = 0; i < questions.length; i++) {
-      await this.questionsRepo.save(this.questionsRepo.create({
-        ...questions[i],
-        surveyId: survey.id,
-        order: i,
-      }));
+    for (const q of questions) {
+      await this.questionsRepo.save(this.questionsRepo.create({ ...q, surveyId: survey.id }));
     }
   }
 }
