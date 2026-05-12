@@ -16,19 +16,6 @@ export enum QuestionType {
   ENTITY_SELECT = 'ENTITY_SELECT',
 }
 
-// Traductor automático de JSON a Texto
-const jsonTransformer = {
-  to: (value: any) => (value ? JSON.stringify(value) : null),
-  from: (value: any) => {
-    if (!value) return null;
-    try {
-      return typeof value === 'string' ? JSON.parse(value) : value;
-    } catch {
-      return value;
-    }
-  },
-};
-
 @Entity('questions')
 export class Question {
   @PrimaryGeneratedColumn('uuid')
@@ -63,9 +50,9 @@ export class Question {
   @Column({ default: 0 })
   order: number;
 
-  @Column({ type: 'text', nullable: true, transformer: jsonTransformer })
-  options: any;
+  @Column({ type: 'text', nullable: true })
+  options: string | null;
 
-  @Column({ type: 'text', nullable: true, transformer: jsonTransformer })
-  config: any;
+  @Column({ type: 'text', nullable: true })
+  config: string | null;
 }
