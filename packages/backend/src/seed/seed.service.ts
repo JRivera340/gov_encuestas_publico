@@ -31,6 +31,9 @@ export class SeedService {
     const catEP = await this.categoriesRepo.save(
       this.categoriesRepo.create({ name: 'Espacio Público', description: 'Gestión de Espacio Público' }),
     );
+    const catAmbiental = await this.categoriesRepo.save(
+      this.categoriesRepo.create({ name: 'AMBIENTAL', description: 'Gestión Ambiental' }),
+    );
 
     // Lista compartida de entidades acompañantes (igual en todos los formularios)
     const entidadesOpts = [
@@ -97,27 +100,47 @@ export class SeedService {
       this.subcategoriesRepo.create({ name: '1801', categoryId: catEP.id }),
     );
     await this.seedSurvey(sub1801.id, 'Espacio Público - 1801', entidadesOpts, [
-      { name: 'estructurasNoConvencionales',       type: QuestionType.NUMBER, label: 'Estructuras no convencionales intervenidas',        isMetric: true, order: 10 },
-      { name: 'cambuches',                         type: QuestionType.NUMBER, label: 'Cambuches intervenidos',                           isMetric: true, order: 11 },
-      { name: 'cachivacheros',                     type: QuestionType.NUMBER, label: 'Cachivacheros intervenidos',                       isMetric: true, order: 12 },
-      { name: 'comparendos',                       type: QuestionType.NUMBER, label: 'Comparendos impuestos',                            isMetric: true, order: 13 },
-      { name: 'armasCortopunzantes',               type: QuestionType.NUMBER, label: 'Armas cortopunzantes incautadas',                  isMetric: true, order: 14 },
-      { name: 'armasFuego',                        type: QuestionType.NUMBER, label: 'Armas de Fuego Incautadas',                        isMetric: true, order: 15 },
-      { name: 'mendicidad',                        type: QuestionType.NUMBER, label: 'Personas en situación de mendicidad identificadas', isMetric: true, order: 16 },
-      { name: 'trasladadosCtp',                    type: QuestionType.NUMBER, label: 'Trasladados a CTP',                                isMetric: true, order: 17 },
-      { name: 'capturados',                        type: QuestionType.NUMBER, label: 'Capturados',                                       isMetric: true, order: 18 },
-      { name: 'personasSensibilizadas',            type: QuestionType.NUMBER, label: 'Personas sensibilizadas',                          isMetric: true, order: 19 },
-      { name: 'kgMercancia',                       type: QuestionType.NUMBER, label: 'Kg de mercancía incautada',                        isMetric: true, order: 20 },
-      { name: 'pipetas',                           type: QuestionType.NUMBER, label: 'Pipetas incautadas',                               isMetric: true, order: 21 },
-      { name: 'bicicletas',                        type: QuestionType.NUMBER, label: 'Bicicletas recuperadas',                           isMetric: true, order: 22 },
-      { name: 'celulares',                         type: QuestionType.NUMBER, label: 'Celulares recuperados',                            isMetric: true, order: 23 },
-      { name: 'carretas',                          type: QuestionType.NUMBER, label: 'Carretas incautadas',                              isMetric: true, order: 24 },
-      { name: 'vendedoresInformalesRetirados',     type: QuestionType.NUMBER, label: 'Vendedores informales retirados',                  isMetric: true, order: 25 },
-      { name: 'vendedoresInformalesIntervenidos',  type: QuestionType.NUMBER, label: 'Vendedores informales intervenidos',               isMetric: true, order: 26 },
-      { name: 'm2Recuperados',                     type: QuestionType.NUMBER, label: 'M2 recuperados de espacio público',                isMetric: true, order: 27 },
+      { name: 'estructurasNoConvencionales',       type: QuestionType.NUMBER, label: 'Estructuras no convencionales intervenidas',         isMetric: true, order: 10 },
+      { name: 'cambuches',                         type: QuestionType.NUMBER, label: 'Cambuches intervenidos',                            isMetric: true, order: 11 },
+      { name: 'cachivacherosIntervenidos',         type: QuestionType.NUMBER, label: 'Cachivacheros intervenidos',                        isMetric: true, order: 12 },
+      { name: 'comparendos',                       type: QuestionType.NUMBER, label: 'Comparendos impuestos',                             isMetric: true, order: 13 },
+      { name: 'armasCortopunzantes',               type: QuestionType.NUMBER, label: 'Armas cortopunzantes incautadas',                   isMetric: true, order: 14 },
+      { name: 'armasFuego',                        type: QuestionType.NUMBER, label: 'Armas de fuego incautadas',                         isMetric: true, order: 15 },
+      { name: 'mendicidad',                        type: QuestionType.NUMBER, label: 'Personas en situación de mendicidad identificadas',  isMetric: true, order: 16 },
+      { name: 'trasladadosCtp',                    type: QuestionType.NUMBER, label: 'Trasladados a CTP',                                 isMetric: true, order: 17 },
+      { name: 'capturados',                        type: QuestionType.NUMBER, label: 'Capturados',                                        isMetric: true, order: 18 },
+      { name: 'personasSensibilizadas',            type: QuestionType.NUMBER, label: 'Personas sensibilizadas',                           isMetric: true, order: 19 },
+      { name: 'kgMercanciaIncautada',              type: QuestionType.NUMBER, label: 'Kg de mercancía incautada',                         isMetric: true, order: 20 },
+      { name: 'pipetasIncautadas',                 type: QuestionType.NUMBER, label: 'Pipetas incautadas',                                isMetric: true, order: 21 },
+      { name: 'bicicletasRecuperadas',             type: QuestionType.NUMBER, label: 'Bicicletas recuperadas',                            isMetric: true, order: 22 },
+      { name: 'celularesRecuperados',              type: QuestionType.NUMBER, label: 'Celulares recuperados',                             isMetric: true, order: 23 },
+      { name: 'carretasIncautadas',                type: QuestionType.NUMBER, label: 'Carretas incautadas',                               isMetric: true, order: 24 },
+      { name: 'vendedoresInformalesRetirados',     type: QuestionType.NUMBER, label: 'Vendedores informales retirados',                   isMetric: true, order: 25 },
+      { name: 'vendedoresInformalesIntervenidos',  type: QuestionType.NUMBER, label: 'Vendedores informales intervenidos',                isMetric: true, order: 26 },
+      { name: 'm2RecuperadosEspacioPublico',       type: QuestionType.NUMBER, label: 'M2 recuperados de espacio público',                 isMetric: true, order: 27 },
     ]);
 
-    return { message: 'Seed definitivo ejecutado con éxito', created: 4 };
+    // ─── AMBIENTAL: AMBIENTAL ─────────────────────────────────────────────────
+    const subAmbiental = await this.subcategoriesRepo.save(
+      this.subcategoriesRepo.create({ name: 'Ambiental', categoryId: catAmbiental.id }),
+    );
+    await this.seedSurvey(subAmbiental.id, 'AMBIENTAL - Ambiental', entidadesOpts, [
+      { name: 'puntosCriticosEmergentesAtendidos', type: QuestionType.NUMBER, label: 'Puntos de residuos emergentes atendidos',           isMetric: true, order: 10 },
+      { name: 'comparendosPedagogicos',            type: QuestionType.NUMBER, label: 'Comparendos pedagógicos',                          isMetric: true, order: 11 },
+      { name: 'comparendos',                       type: QuestionType.NUMBER, label: 'Comparendos',                                      isMetric: true, order: 12 },
+      { name: 'personasSensibilizadas',            type: QuestionType.NUMBER, label: 'Personas sensibilizadas',                          isMetric: true, order: 13 },
+      { name: 'huertas',                           type: QuestionType.NUMBER, label: 'Huertas',                                         isMetric: true, order: 14 },
+      { name: 'kgMaterialResiduosRecolectados',    type: QuestionType.NUMBER, label: 'Kg de material de residuos recolectados',          isMetric: true, order: 15 },
+      { name: 'm2RecuperadosEspacioPublico',       type: QuestionType.NUMBER, label: 'M2 recuperados de espacio público',                isMetric: true, order: 16 },
+    ]);
+
+    // ─── AMBIENTAL: PUNTOS DE ACUMULACIÓN DE RESIDUOS ────────────────────────
+    const subPuntos = await this.subcategoriesRepo.save(
+      this.subcategoriesRepo.create({ name: 'Puntos de Acumulación de Residuos', categoryId: catAmbiental.id }),
+    );
+    await this.seedSurveyPuntosAcumulacion(subPuntos.id, entidadesOpts);
+
+    return { message: 'Seed definitivo ejecutado con éxito', created: 6 };
   }
 
   /**
@@ -217,6 +240,135 @@ export class SeedService {
         required: true,
         config: { accept: 'application/pdf', minPages: 3, maxSizeMB: 10 },
         order: 91,
+      },
+    ];
+
+    for (const q of questions) {
+      await this.questionsRepo.save(
+        this.questionsRepo.create({ ...q, surveyId: survey.id }),
+      );
+    }
+  }
+
+  /**
+   * Encuesta especial para Identificación de Puntos de Acumulación de Residuos.
+   * Usa campos RADIO con opciones específicas definidas en operativoFields.ts de espacio-publico.
+   */
+  private async seedSurveyPuntosAcumulacion(
+    subcategoryId: string,
+    entidadesOpts: { label: string; value: string }[],
+  ) {
+    const survey = await this.surveysRepo.save(
+      this.surveysRepo.create({
+        title: 'AMBIENTAL - Identificación de Puntos de Acumulación de Residuos',
+        status: SurveyStatus.ACTIVE,
+        subcategoryId,
+        version: 1,
+      }),
+    );
+
+    const questions: Partial<Question>[] = [
+      // ── SECCIÓN 2: Datos del Punto de Acumulación ────────────────────────────
+      { type: QuestionType.SECTION_HEADER, label: '2. Datos del Punto de Acumulación', name: 'sec_2', order: 1 },
+      {
+        type: QuestionType.RADIO,
+        label: '¿Quién dispuso los residuos?',
+        name: 'quienDispuso',
+        required: true,
+        order: 10,
+        options: [
+          { value: 'COMUNIDAD',                   label: 'Comunidad' },
+          { value: 'ESTABLECIMIENTOS_COMERCIALES', label: 'Establecimientos comerciales' },
+          { value: 'VOLQUETAS',                    label: 'Volquetas' },
+          { value: 'HABITANTES_DE_CALLE',          label: 'Habitantes de calle' },
+          { value: 'OTROS_NO_SE_CONOCE',           label: 'Otros, no se conoce' },
+        ],
+      },
+      {
+        type: QuestionType.RADIO,
+        label: '¿Qué tipo de residuo fue dispuesto?',
+        name: 'tipoResiduo',
+        required: true,
+        order: 11,
+        options: [
+          { value: 'RESIDUOS_ORDINARIOS',  label: 'Residuos ordinarios' },
+          { value: 'RESIDUOS_VOLUMINOSOS', label: 'Residuos voluminosos' },
+          { value: 'ESCOMBROS',            label: 'Escombros' },
+        ],
+      },
+      {
+        type: QuestionType.RADIO,
+        label: '¿Se perciben olores?',
+        name: 'percibeOlores',
+        required: true,
+        order: 12,
+        options: [
+          { value: 'true',  label: 'Sí' },
+          { value: 'false', label: 'No' },
+        ],
+      },
+      {
+        type: QuestionType.RADIO,
+        label: '¿Se perciben vectores? (Roedores, Palomas, Insectos, Perros Callejeros, Gatos Callejeros)',
+        name: 'percibeVectores',
+        required: true,
+        order: 13,
+        options: [
+          { value: 'true',  label: 'Sí' },
+          { value: 'false', label: 'No' },
+        ],
+      },
+      {
+        type: QuestionType.NUMBER,
+        label: 'Área lineal estimada ocupada por los residuos (metros)',
+        name: 'areaLinealMetros',
+        required: true,
+        placeholder: 'Ej: 10',
+        order: 14,
+      },
+      {
+        type: QuestionType.TEXTAREA,
+        label: 'Observaciones',
+        name: 'observaciones',
+        placeholder: 'Observaciones adicionales sobre el punto de acumulación...',
+        order: 15,
+      },
+
+      // ── SECCIÓN 3: Fecha y Hora ──────────────────────────────────────────────
+      { type: QuestionType.SECTION_HEADER, label: '3. Fecha y Hora', name: 'sec_3', order: 30 },
+      { type: QuestionType.DATE, label: 'Fecha y hora del reporte', name: 'fecha_operativo', required: true, order: 31 },
+
+      // ── SECCIÓN 4: Ubicación ─────────────────────────────────────────────────
+      { type: QuestionType.SECTION_HEADER, label: '4. Ubicación', name: 'sec_4', order: 40 },
+      { type: QuestionType.LOCATION, label: 'Ubicación del punto de acumulación', name: 'ubicacion_mapa', required: true, order: 41 },
+
+      // ── SECCIÓN 5: Evidencia Fotográfica ────────────────────────────────────
+      { type: QuestionType.SECTION_HEADER, label: '5. Evidencia Fotográfica', name: 'sec_5', order: 50 },
+      {
+        type: QuestionType.FILE,
+        label: 'Fotos del punto de acumulación',
+        name: 'fotos_evidencia',
+        required: true,
+        config: { maxFiles: 5, maxSizeMB: 10 },
+        order: 51,
+      },
+
+      // ── SECCIÓN 6: Entidades ─────────────────────────────────────────────────
+      { type: QuestionType.SECTION_HEADER, label: '6. Entidades', name: 'sec_6', order: 60 },
+      {
+        type: QuestionType.SELECT,
+        label: 'Entidad responsable',
+        name: 'entidad_responsable',
+        required: true,
+        options: entidadesOpts,
+        order: 61,
+      },
+      {
+        type: QuestionType.MULTISELECT,
+        label: 'Entidades acompañantes',
+        name: 'entidades_acompanantes',
+        options: entidadesOpts,
+        order: 62,
       },
     ];
 
