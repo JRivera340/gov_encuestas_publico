@@ -4,8 +4,10 @@ import { CATEGORY_COLORS, CATEGORY_DISPLAY_NAMES } from '../../types';
 import { ChevronRight, Layers, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { subcategoriesApi } from '../../api/subcategories.api';
+import { categoriesApi } from '../../api/categories.api';
 import { useToast } from '../ui/Toast';
 import Modal from '../ui/Modal';
+import RoleVisibilityMenu from './RoleVisibilityMenu';
 
 interface CategoryCardProps {
   category: Category;
@@ -60,7 +62,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
           <div className={`h-10 w-10 rounded-xl ${colors.accent} flex items-center justify-center shadow-lg`}>
             <Layers className="h-5 w-5 text-white" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <RoleVisibilityMenu
+              visibleRoles={category.visibleRoles}
+              onPersist={async (roles) => {
+                await categoriesApi.update(category.id, { visibleRoles: roles } as any);
+                if (onUpdate) onUpdate();
+              }}
+            />
             <button
               onClick={(e) => {
                 e.stopPropagation();

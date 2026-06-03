@@ -1,30 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Eye } from 'lucide-react';
-import { surveysApi } from '../../api/surveys.api';
-import type { Survey } from '../../types';
 import { SURVEY_ROLES } from '../../types';
 import { useToast } from './Toast';
 
 interface RoleVisibilityMenuProps {
-  survey: Survey;
-  onUpdated: (survey: Survey) => void;
+  // Estado actual de la entidad: null = visible para todos, [] = oculta para
+  // todos, [..] = allowlist explícita.
+  visibleRoles?: string[] | null;
+  // Persiste el nuevo conjunto de roles (p. ej. categoriesApi.update).
+  onPersist: (roles: string[]) => Promise<void>;
 }
 
 /**
- * Control de visibilidad por rol de una encuesta. Sustituye al antiguo
- * engranaje de activar/desactivar. Permite decidir qué roles de
- * gov-espacio-publico pueden ver/llenar el formulario.
+ * Control de visibilidad por rol. Permite decidir qué roles de
+ * gov-espacio-publico pueden ver/llenar los formularios de la entidad
+ * (actualmente, una categoría).
  *
  * El menú se renderiza con portal y posición fija para que no lo recorte el
- * overflow de la tabla.
- *
- * Semántica de `visibleRoles`:
- *  - null  => visible para todos los roles (retrocompatibilidad).
- *  - []    => oculto para todos.
- *  - [..]  => allowlist explícita.
+ * overflow del contenedor.
  */
-const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdated }) => {
+const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ visibleRoles, onPersist }) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -63,14 +59,13 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
   }, [open]);
 
   const allRoleValues = SURVEY_ROLES.map((r) => r.value);
-  const activeRoles: string[] = survey.visibleRoles == null ? allRoleValues : survey.visibleRoles;
+  const activeRoles: string[] = visibleRoles == null ? allRoleValues : visibleRoles;
   const isActive = (role: string) => activeRoles.includes(role);
 
   const persist = async (roles: string[]) => {
     setSaving(true);
     try {
-      const updated = await surveysApi.update(survey.id, { visibleRoles: roles });
-      onUpdated(updated);
+      await onPersist(roles);
       toast('Visibilidad actualizada', 'success');
     } catch {
       toast('Error actualizando la visibilidad', 'error');
@@ -113,7 +108,7 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
     });
   };
 
-  const hiddenForAll = survey.visibleRoles != null && survey.visibleRoles.length === 0;
+  const hiddenForAll = visibleRoles != null && visibleRoles.length === 0;
 
   return (
     <>
@@ -167,11 +162,11 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
             ))}
           </div>
 
-          {survey.visibleRoles == null && (
+          {visibleRoles == null && (
             <p className="text-[10px] text-[#484f58] mt-2">Actualmente visible para todos los roles.</p>
           )}
           {hiddenForAll && (
-            <p className="text-[10px] text-amber-400 mt-2">Oculto para todos los gestores.</p>
+            <p className="text-[10px] text-amber-400 mt-2">Oculta para todos los gestores.</p>
           )}
 
           {selected.size > 0 && (

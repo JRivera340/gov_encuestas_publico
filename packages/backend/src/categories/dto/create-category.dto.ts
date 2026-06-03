@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCategoryDto {
   @IsString()
@@ -8,4 +8,10 @@ export class CreateCategoryDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  // Roles que pueden ver/llenar los formularios de la categoría. Vacío/ausente = todos.
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  visibleRoles?: string[];
 }

@@ -11,12 +11,12 @@ import {
   Plus,
   Search,
   Eye,
+  Settings,
   Trash2,
   RefreshCw,
   ClipboardList,
 } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
-import RoleVisibilityMenu from '../components/ui/RoleVisibilityMenu';
 
 const SurveysPage: React.FC = () => {
   const navigate = useNavigate();
@@ -176,12 +176,22 @@ const SurveysPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <RoleVisibilityMenu
-                        survey={survey}
-                        onUpdated={(updated) =>
-                          setSurveys((prev) => prev.map((s) => (s.id === updated.id ? updated : s)))
-                        }
-                      />
+                      <button
+                        onClick={async () => {
+                          const newStatus = survey.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+                          try {
+                            const updated = await surveysApi.update(survey.id, { status: newStatus as any });
+                            setSurveys(prev => prev.map(s => s.id === survey.id ? updated : s));
+                            toast(`Encuesta ${newStatus === 'ACTIVE' ? 'activada' : 'desactivada'}`, 'success');
+                          } catch {
+                            toast('Error al cambiar estado', 'error');
+                          }
+                        }}
+                        className={`btn-ghost p-1.5 rounded-lg ${survey.status === 'ACTIVE' ? 'text-green-400' : 'text-[#484f58]'}`}
+                        title={survey.status === 'ACTIVE' ? 'Desactivar' : 'Activar'}
+                      >
+                        <Settings className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         onClick={() => navigate(`/surveys/${survey.id}/preview`)}
                         className="btn-ghost p-1.5 rounded-lg"

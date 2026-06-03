@@ -18,6 +18,25 @@ export class Category {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // Roles (de gov-espacio-publico) que pueden ver/llenar los formularios de esta
+  // categoría. null = visible para todos. [] = oculta para todos. [..] = allowlist.
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to: (value: any) => (value == null ? null : JSON.stringify(value)),
+      from: (value: any) => {
+        if (value == null) return null;
+        try {
+          return typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          return null;
+        }
+      },
+    },
+  })
+  visibleRoles: string[] | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

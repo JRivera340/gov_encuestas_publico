@@ -29,6 +29,8 @@ export interface Category {
   id: string;
   name: string;
   description: string;
+  // Roles que pueden ver/llenar los formularios de la categoría. null = todos.
+  visibleRoles?: string[] | null;
   createdAt: string;
   subcategories: Subcategory[];
 }
