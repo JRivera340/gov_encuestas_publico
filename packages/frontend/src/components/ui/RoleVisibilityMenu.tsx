@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Eye } from 'lucide-react';
 import { surveysApi } from '../../api/surveys.api';
 import type { Survey } from '../../types';
@@ -15,6 +16,9 @@ interface RoleVisibilityMenuProps {
  * engranaje de activar/desactivar. Permite decidir qué roles de
  * gov-espacio-publico pueden ver/llenar el formulario.
  *
+ * El menú se renderiza con portal y posición fija para que no lo recorte el
+ * overflow de la tabla.
+ *
  * Semántica de `visibleRoles`:
  *  - null  => visible para todos los roles (retrocompatibilidad).
  *  - []    => oculto para todos.
@@ -25,15 +29,37 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const ref = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const MENU_WIDTH = 256;
+
+  const openMenu = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const left = Math.max(8, rect.right - MENU_WIDTH);
+      setCoords({ top: rect.bottom + 6, left });
+    }
+    setOpen(true);
+  };
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (buttonRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
     };
+    const onScrollOrResize = () => setOpen(false);
     document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
+    window.addEventListener('resize', onScrollOrResize);
+    window.addEventListener('scroll', onScrollOrResize, true);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      window.removeEventListener('resize', onScrollOrResize);
+      window.removeEventListener('scroll', onScrollOrResize, true);
+    };
   }, [open]);
 
   const allRoleValues = SURVEY_ROLES.map((r) => r.value);
@@ -90,17 +116,22 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
   const hiddenForAll = survey.visibleRoles != null && survey.visibleRoles.length === 0;
 
   return (
-    <div className="relative" ref={ref}>
+    <>
       <button
-        onClick={() => setOpen((o) => !o)}
+        ref={buttonRef}
+        onClick={() => (open ? setOpen(false) : openMenu())}
         className="btn-ghost p-1.5 rounded-lg text-[#8b949e] hover:text-[#e6edf3]"
         title="Ajustar vista (visibilidad por rol)"
       >
         <Eye className="h-3.5 w-3.5" />
       </button>
 
-      {open && (
-        <div className="absolute right-0 z-30 mt-1 w-64 rounded-lg border border-[#30363d] bg-[#161b22] shadow-xl p-3 text-left">
+      {open && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: 'fixed', top: coords.top, left: coords.left, width: MENU_WIDTH, zIndex: 1000 }}
+          className="rounded-lg border border-[#30363d] bg-[#161b22] shadow-2xl p-3 text-left"
+        >
           <p className="text-xs font-semibold text-[#e6edf3] mb-2">¿Quién puede ver este formulario?</p>
 
           <button
@@ -161,9 +192,10 @@ const RoleVisibilityMenu: React.FC<RoleVisibilityMenuProps> = ({ survey, onUpdat
               </button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   );
 };
 
