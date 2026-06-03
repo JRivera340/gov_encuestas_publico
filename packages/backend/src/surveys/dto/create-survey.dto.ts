@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -27,4 +28,10 @@ export class CreateSurveyDto {
   @IsString()
   @IsNotEmpty()
   subcategoryId: string;
+
+  // Roles que pueden ver/llenar el formulario. Vacío/ausente = todos.
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  visibleRoles?: string[];
 }

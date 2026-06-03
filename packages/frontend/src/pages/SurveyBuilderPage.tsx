@@ -24,13 +24,14 @@ import QuestionEditor from '../components/builder/QuestionEditor';
 import { surveysApi } from '../api/surveys.api';
 import { questionsApi } from '../api/questions.api';
 import type { Survey, Question, CreateQuestionPayload } from '../types';
-import { SurveyStatus, CATEGORY_DISPLAY_NAMES } from '../types';
+import { SurveyStatus, CATEGORY_DISPLAY_NAMES, QuestionType } from '../types';
 import {
   ArrowLeft,
   Plus,
   Eye,
   Save,
   Layers,
+  Upload,
 } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
 
@@ -46,6 +47,18 @@ const SurveyBuilderPage: React.FC = () => {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [saving, setSaving] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importing, setImporting] = useState(false);
+
+  const JSON_IMPORT_EXAMPLE = `[
+  { "type": "SECTION_HEADER", "label": "1. Información general" },
+  { "type": "TEXT", "label": "Nombre del establecimiento", "name": "nombre_establecimiento", "required": true },
+  { "type": "SELECT", "label": "Tipo de local", "required": false,
+    "options": [ { "label": "Comercio", "value": "comercio" }, { "label": "Vivienda", "value": "vivienda" } ] },
+  { "type": "FILE", "label": "Acta del Operativo (PDF)", "name": "acta_pdf", "required": true,
+    "config": { "accept": "application/pdf", "maxSizeMB": 10 } }
+]`;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -111,6 +124,109 @@ const SurveyBuilderPage: React.FC = () => {
       toast('Error guardando pregunta', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const normalizeName = (text: string) =>
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .replace(/[^a-z0-9\s]/g, '')
+      .trim()
+      .replace(/\s+/g, '_');
+
+  const handleImportJson = async () => {
+    if (!id) return;
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(importText);
+    } catch {
+      toast('JSON inválido: revisa la sintaxis', 'error');
+      return;
+    }
+
+    const arr = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray(parsed?.questions)
+        ? parsed.questions
+        : null;
+    if (!arr) {
+      toast('El JSON debe ser un arreglo de preguntas o un objeto { "questions": [...] }', 'error');
+      return;
+    }
+
+    const validTypes = Object.values(QuestionType) as string[];
+    const payloads: CreateQuestionPayload[] = [];
+
+    for (let i = 0; i < arr.length; i++) {
+      const q = arr[i];
+      if (!q || typeof q !== 'object') {
+        toast(`Pregunta ${i + 1}: formato inválido`, 'error');
+        return;
+      }
+      const type = String(q.type || '').toUpperCase();
+      if (!validTypes.includes(type)) {
+        toast(`Pregunta ${i + 1}: tipo inválido "${q.type}". Tipos válidos: ${validTypes.join(', ')}`, 'error');
+        return;
+      }
+      const label = String(q.label || '').trim();
+      if (!label) {
+        toast(`Pregunta ${i + 1}: falta el enunciado (label)`, 'error');
+        return;
+      }
+      const name = String(q.name || '').trim() || normalizeName(label);
+
+      const options = Array.isArray(q.options)
+        ? q.options.map((o: any) =>
+            typeof o === 'string'
+              ? { label: o, value: normalizeName(o) }
+              : {
+                  label: String(o?.label ?? o?.value ?? ''),
+                  value: String(o?.value ?? normalizeName(String(o?.label ?? ''))),
+                },
+          )
+        : undefined;
+
+      payloads.push({
+        type: type as CreateQuestionPayload['type'],
+        name,
+        label,
+        placeholder: q.placeholder ? String(q.placeholder) : undefined,
+        required: !!q.required,
+        options,
+        config: q.config && typeof q.config === 'object' ? q.config : undefined,
+      });
+    }
+
+    if (payloads.length === 0) {
+      toast('No hay preguntas para importar', 'error');
+      return;
+    }
+
+    setImporting(true);
+    const createdQuestions: Question[] = [];
+    try {
+      for (let i = 0; i < payloads.length; i++) {
+        const created = await questionsApi.create(id, {
+          ...payloads[i],
+          order: questions.length + i,
+        });
+        createdQuestions.push(created);
+      }
+      setQuestions((prev) => [...prev, ...createdQuestions]);
+      toast(`${createdQuestions.length} pregunta(s) importada(s)`, 'success');
+      setImportOpen(false);
+      setImportText('');
+    } catch {
+      if (createdQuestions.length) setQuestions((prev) => [...prev, ...createdQuestions]);
+      toast(
+        `Se importaron ${createdQuestions.length} de ${payloads.length}. Error en la pregunta ${createdQuestions.length + 1}.`,
+        'error',
+      );
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -198,13 +314,23 @@ const SurveyBuilderPage: React.FC = () => {
               <h2 className="section-title">Preguntas</h2>
               <span className="text-xs text-[#484f58]">({questions.length})</span>
             </div>
-            <button
-              onClick={() => { setEditingQuestion(null); setModalOpen(true); }}
-              className="btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              Agregar pregunta
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setImportText(''); setImportOpen(true); }}
+                className="btn-secondary"
+                title="Importar preguntas desde JSON"
+              >
+                <Upload className="h-4 w-4" />
+                Importar JSON
+              </button>
+              <button
+                onClick={() => { setEditingQuestion(null); setModalOpen(true); }}
+                className="btn-primary"
+              >
+                <Plus className="h-4 w-4" />
+                Agregar pregunta
+              </button>
+            </div>
           </div>
 
           {questions.length === 0 ? (
@@ -316,6 +442,55 @@ const SurveyBuilderPage: React.FC = () => {
           onCancel={() => { setModalOpen(false); setEditingQuestion(null); }}
           isSaving={saving}
         />
+      </Modal>
+
+      {/* Modal — Importar JSON */}
+      <Modal
+        open={importOpen}
+        onClose={() => { if (!importing) { setImportOpen(false); setImportText(''); } }}
+        title="Importar preguntas desde JSON"
+        maxWidth="max-w-2xl"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[#8b949e]">
+            Pega un arreglo de preguntas (o un objeto <code className="text-blue-400">{'{ "questions": [...] }'}</code>).
+            Las preguntas se agregan al final del formulario. Si no defines <code className="text-blue-400">name</code>,
+            se genera a partir del enunciado.
+          </p>
+          <details className="text-xs text-[#8b949e]">
+            <summary className="cursor-pointer text-blue-400 select-none">Ver formato de ejemplo</summary>
+            <pre className="mt-2 p-3 rounded-lg bg-[#0d1117] border border-[#30363d] overflow-x-auto text-[11px] leading-relaxed">{JSON_IMPORT_EXAMPLE}</pre>
+            <p className="mt-2">
+              Tipos válidos: {(Object.values(QuestionType) as string[]).join(', ')}.
+            </p>
+          </details>
+          <textarea
+            className="input font-mono text-xs min-h-[260px]"
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            placeholder='[ { "type": "TEXT", "label": "Nombre", "required": true } ]'
+            spellCheck={false}
+          />
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#30363d]">
+            <button
+              type="button"
+              onClick={() => { setImportOpen(false); setImportText(''); }}
+              disabled={importing}
+              className="btn-secondary"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleImportJson}
+              disabled={importing || !importText.trim()}
+              className="btn-primary"
+            >
+              <Upload className="h-4 w-4" />
+              {importing ? 'Importando...' : 'Importar'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </Layout>
   );

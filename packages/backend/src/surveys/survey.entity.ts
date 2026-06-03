@@ -33,6 +33,27 @@ export class Survey {
   @Column({ default: 1 })
   version: number;
 
+  // Roles (de gov-espacio-publico) que pueden ver/llenar este formulario.
+  // null o arreglo vacío = visible para todos los roles (retrocompatibilidad).
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      // null/undefined => visible para todos. Arreglo (incluido vacío) => allowlist
+      // explícita; el vacío significa "oculto para todos".
+      to: (value: any) => (value == null ? null : JSON.stringify(value)),
+      from: (value: any) => {
+        if (value == null) return null;
+        try {
+          return typeof value === 'string' ? JSON.parse(value) : value;
+        } catch {
+          return null;
+        }
+      },
+    },
+  })
+  visibleRoles: string[] | null;
+
   @ManyToOne(() => Subcategory, (subcategory) => subcategory.surveys, {
     onDelete: 'CASCADE',
   })

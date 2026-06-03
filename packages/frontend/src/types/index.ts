@@ -69,6 +69,8 @@ export interface Survey {
   subcategoryId: string;
   subcategory?: Subcategory & { category?: Category };
   questions: Question[];
+  // Roles que pueden ver/llenar el formulario. null = visible para todos.
+  visibleRoles?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -80,6 +82,7 @@ export interface CreateSurveyPayload {
   description?: string;
   status?: SurveyStatus;
   subcategoryId: string;
+  visibleRoles?: string[];
 }
 
 export interface UpdateSurveyPayload extends Partial<CreateSurveyPayload> {}
@@ -145,3 +148,10 @@ export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
   ESPACIO_PUBLICO: 'Espacio Público',
   AMBIENTAL: 'Ambiental',
 };
+
+// Roles de gov-espacio-publico que diligencian formularios. Son los que se
+// gestionan en el control de visibilidad por rol de cada encuesta.
+export const SURVEY_ROLES: { value: string; label: string }[] = [
+  { value: 'GESTOR', label: 'Gestor de Seguridad' },
+  { value: 'GESTOR_AMBIENTAL', label: 'Gestor Ambiental' },
+];
