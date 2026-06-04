@@ -12,8 +12,14 @@ export class Category {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // Clave estable / contrato con gov-espacio-publico. NO renombrar: el mapeo a
+  // los enums OperativoCategoria depende de este valor.
   @Column({ type: 'text', unique: true })
   name: string;
+
+  // Nombre visible editable. Si es null, se usa `name`. No afecta el contrato.
+  @Column({ type: 'text', nullable: true })
+  displayName: string | null;
 
   @Column({ type: 'text', nullable: true })
   description: string;

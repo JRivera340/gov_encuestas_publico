@@ -113,7 +113,7 @@ const SurveysPage: React.FC = () => {
           <option value="">Todas las categorías</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {CATEGORY_DISPLAY_NAMES[c.name] ?? c.name}
+              {c.displayName ?? CATEGORY_DISPLAY_NAMES[c.name] ?? c.name}
             </option>
           ))}
         </select>
@@ -163,10 +163,10 @@ const SurveysPage: React.FC = () => {
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-[#8b949e] text-xs">
-                    {CATEGORY_DISPLAY_NAMES[survey.subcategory?.category?.name ?? ''] ?? survey.subcategory?.category?.name ?? '—'}
+                    {survey.subcategory?.category?.displayName ?? CATEGORY_DISPLAY_NAMES[survey.subcategory?.category?.name ?? ''] ?? survey.subcategory?.category?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3.5 text-[#8b949e] text-xs">
-                    {survey.subcategory?.name ?? '—'}
+                    {survey.subcategory?.displayName ?? survey.subcategory?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3.5">
                     <Badge status={survey.status} />

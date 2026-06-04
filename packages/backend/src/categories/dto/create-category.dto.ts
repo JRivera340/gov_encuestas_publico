@@ -7,6 +7,10 @@ export class CreateCategoryDto {
 
   @IsString()
   @IsOptional()
+  displayName?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
 
   // Roles que pueden ver/llenar los formularios de la categoría. Vacío/ausente = todos.

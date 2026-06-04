@@ -28,6 +28,8 @@ export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
 export interface Category {
   id: string;
   name: string;
+  // Nombre visible editable; si es null se usa name. No afecta el contrato.
+  displayName?: string | null;
   description: string;
   // Roles que pueden ver/llenar los formularios de la categoría. null = todos.
   visibleRoles?: string[] | null;
@@ -38,6 +40,8 @@ export interface Category {
 export interface Subcategory {
   id: string;
   name: string;
+  // Nombre visible editable; si es null se usa name. No afecta el contrato.
+  displayName?: string | null;
   description: string;
   categoryId: string;
   category?: Category;

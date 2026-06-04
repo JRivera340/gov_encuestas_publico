@@ -7,6 +7,10 @@ export class CreateSubcategoryDto {
 
   @IsString()
   @IsOptional()
+  displayName?: string;
+
+  @IsString()
+  @IsOptional()
   description?: string;
 
   @IsUUID()

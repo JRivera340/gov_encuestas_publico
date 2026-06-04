@@ -21,20 +21,20 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
   const [newSub, setNewSub] = useState({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
 
-  // Editar categoría
+  // Editar categoría (solo nombre visible — el name/contrato no se toca)
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', description: '' });
+  const [editForm, setEditForm] = useState({ displayName: '', description: '' });
 
   // Editar subcategoría
   const [subEdit, setSubEdit] = useState<Subcategory | null>(null);
-  const [subForm, setSubForm] = useState({ name: '', description: '' });
+  const [subForm, setSubForm] = useState({ displayName: '', description: '' });
 
   const colors = CATEGORY_COLORS[category.name] ?? {
     bg: 'from-gray-500/20 to-gray-600/10',
     accent: 'bg-gray-500',
     text: 'text-gray-400',
   };
-  const displayName = CATEGORY_DISPLAY_NAMES[category.name] ?? category.name;
+  const displayName = category.displayName ?? CATEGORY_DISPLAY_NAMES[category.name] ?? category.name;
 
   const handleAddSubcategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,19 +58,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
   };
 
   const openEditCategory = () => {
-    setEditForm({ name: category.name, description: category.description ?? '' });
+    setEditForm({ displayName: category.displayName ?? '', description: category.description ?? '' });
     setEditOpen(true);
   };
 
   const handleEditCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editForm.name.trim()) return;
+    if (!editForm.displayName.trim()) return;
     setSaving(true);
     try {
       await categoriesApi.update(category.id, {
-        name: editForm.name.trim(),
+        displayName: editForm.displayName.trim(),
         description: editForm.description,
-      });
+      } as any);
       toast('Categoría actualizada', 'success');
       setEditOpen(false);
       if (onUpdate) onUpdate();
@@ -83,18 +83,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
 
   const openEditSub = (sub: Subcategory) => {
     setSubEdit(sub);
-    setSubForm({ name: sub.name, description: sub.description ?? '' });
+    setSubForm({ displayName: sub.displayName ?? '', description: sub.description ?? '' });
   };
 
   const handleEditSub = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subEdit || !subForm.name.trim()) return;
+    if (!subEdit || !subForm.displayName.trim()) return;
     setSaving(true);
     try {
       await subcategoriesApi.update(subEdit.id, {
-        name: subForm.name.trim(),
+        displayName: subForm.displayName.trim(),
         description: subForm.description,
-      });
+      } as any);
       toast('Subcategoría actualizada', 'success');
       setSubEdit(null);
       if (onUpdate) onUpdate();
@@ -170,7 +170,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
                   key={sub.id}
                   className="group/sub inline-flex items-center gap-1 rounded-md border border-[#30363d] bg-[#0d1117]/40 px-2 py-0.5 text-[11px] text-[#8b949e]"
                 >
-                  {sub.name}
+                  {sub.displayName ?? sub.name}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -236,16 +236,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
         <form onSubmit={handleEditCategory} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
-              Nombre
+              Nombre visible
             </label>
             <input
               type="text"
               className="input-field"
-              value={editForm.name}
-              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              value={editForm.displayName}
+              onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
               required
               autoFocus
             />
+            <p className="text-[11px] text-[#8b949e] mt-1">
+              Clave interna: <span className="font-mono text-[#c9d1d9]">{category.name}</span> (no cambia)
+            </p>
           </div>
           <div>
             <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
@@ -273,16 +276,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
         <form onSubmit={handleEditSub} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
-              Nombre
+              Nombre visible
             </label>
             <input
               type="text"
               className="input-field"
-              value={subForm.name}
-              onChange={(e) => setSubForm({ ...subForm, name: e.target.value })}
+              value={subForm.displayName}
+              onChange={(e) => setSubForm({ ...subForm, displayName: e.target.value })}
               required
               autoFocus
             />
+            <p className="text-[11px] text-[#8b949e] mt-1">
+              Clave interna: <span className="font-mono text-[#c9d1d9]">{subEdit?.name}</span> (no cambia)
+            </p>
           </div>
           <div>
             <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">

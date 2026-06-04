@@ -14,8 +14,10 @@ async function bootstrap() {
       const ds = app.get(DataSource);
       await ds.query('ALTER TABLE "surveys" ADD COLUMN IF NOT EXISTS "visibleRoles" text');
       await ds.query('ALTER TABLE "categories" ADD COLUMN IF NOT EXISTS "visibleRoles" text');
+      await ds.query('ALTER TABLE "categories" ADD COLUMN IF NOT EXISTS "displayName" text');
+      await ds.query('ALTER TABLE "subcategories" ADD COLUMN IF NOT EXISTS "displayName" text');
     } catch (err) {
-      console.error('[bootstrap] No se pudo asegurar la columna visibleRoles:', err);
+      console.error('[bootstrap] No se pudo asegurar columnas (visibleRoles/displayName):', err);
     }
   }
 

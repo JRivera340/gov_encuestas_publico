@@ -329,7 +329,7 @@ const CreateSurveyPage: React.FC = () => {
               <option value="">Seleccionar categoría...</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {CATEGORY_DISPLAY_NAMES[c.name] ?? c.name}
+                  {c.displayName ?? CATEGORY_DISPLAY_NAMES[c.name] ?? c.name}
                 </option>
               ))}
             </select>
@@ -349,7 +349,7 @@ const CreateSurveyPage: React.FC = () => {
                 {selectedCategory ? 'Seleccionar subcategoría...' : 'Primero selecciona una categoría'}
               </option>
               {subcategories.map((s) => (
-                <option key={s.id} value={s.id}>{s.name}</option>
+                <option key={s.id} value={s.id}>{s.displayName ?? s.name}</option>
               ))}
             </select>
           </div>
