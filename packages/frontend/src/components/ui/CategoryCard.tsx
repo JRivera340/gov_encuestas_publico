@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import type { Category } from '../../types';
+import type { Category, Subcategory } from '../../types';
 import { CATEGORY_COLORS, CATEGORY_DISPLAY_NAMES } from '../../types';
-import { ChevronRight, Layers, Plus } from 'lucide-react';
+import { ChevronRight, Layers, Plus, Pencil } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { subcategoriesApi } from '../../api/subcategories.api';
 import { categoriesApi } from '../../api/categories.api';
@@ -20,6 +20,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [newSub, setNewSub] = useState({ name: '', description: '' });
   const [saving, setSaving] = useState(false);
+
+  // Editar categoría
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', description: '' });
+
+  // Editar subcategoría
+  const [subEdit, setSubEdit] = useState<Subcategory | null>(null);
+  const [subForm, setSubForm] = useState({ name: '', description: '' });
 
   const colors = CATEGORY_COLORS[category.name] ?? {
     bg: 'from-gray-500/20 to-gray-600/10',
@@ -49,6 +57,54 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
     }
   };
 
+  const openEditCategory = () => {
+    setEditForm({ name: category.name, description: category.description ?? '' });
+    setEditOpen(true);
+  };
+
+  const handleEditCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editForm.name.trim()) return;
+    setSaving(true);
+    try {
+      await categoriesApi.update(category.id, {
+        name: editForm.name.trim(),
+        description: editForm.description,
+      });
+      toast('Categoría actualizada', 'success');
+      setEditOpen(false);
+      if (onUpdate) onUpdate();
+    } catch (err: any) {
+      toast(err.message || 'Error al actualizar categoría', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openEditSub = (sub: Subcategory) => {
+    setSubEdit(sub);
+    setSubForm({ name: sub.name, description: sub.description ?? '' });
+  };
+
+  const handleEditSub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subEdit || !subForm.name.trim()) return;
+    setSaving(true);
+    try {
+      await subcategoriesApi.update(subEdit.id, {
+        name: subForm.name.trim(),
+        description: subForm.description,
+      });
+      toast('Subcategoría actualizada', 'success');
+      setSubEdit(null);
+      if (onUpdate) onUpdate();
+    } catch (err: any) {
+      toast(err.message || 'Error al actualizar subcategoría', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <>
       <div
@@ -70,6 +126,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
                 if (onUpdate) onUpdate();
               }}
             />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openEditCategory();
+              }}
+              className="p-1.5 rounded-lg bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3] border border-[#30363d] transition-colors"
+              title="Renombrar categoría"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -102,9 +168,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
               category.subcategories?.map((sub) => (
                 <span
                   key={sub.id}
-                  className="rounded-md border border-[#30363d] bg-[#0d1117]/40 px-2 py-0.5 text-[11px] text-[#8b949e]"
+                  className="group/sub inline-flex items-center gap-1 rounded-md border border-[#30363d] bg-[#0d1117]/40 px-2 py-0.5 text-[11px] text-[#8b949e]"
                 >
                   {sub.name}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditSub(sub);
+                    }}
+                    className="opacity-0 group-hover/sub:opacity-100 text-[#8b949e] hover:text-[#e6edf3] transition-opacity"
+                    title="Renombrar subcategoría"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
                 </span>
               ))
             )}
@@ -145,19 +221,85 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onUpdate }) => {
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setModalOpen(false)}
-              className="btn-ghost"
-            >
+            <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost">
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="btn-primary px-6"
-              disabled={saving}
-            >
+            <button type="submit" className="btn-primary px-6" disabled={saving}>
               {saving ? 'Añadiendo...' : 'Añadir'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Editar Categoría */}
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Renombrar categoría">
+        <form onSubmit={handleEditCategory} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Nombre
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Descripción (Opcional)
+            </label>
+            <textarea
+              className="input-field min-h-[80px] resize-none"
+              value={editForm.description}
+              onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setEditOpen(false)} className="btn-ghost">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary px-6" disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Editar Subcategoría */}
+      <Modal open={!!subEdit} onClose={() => setSubEdit(null)} title="Renombrar subcategoría">
+        <form onSubmit={handleEditSub} className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Nombre
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              value={subForm.name}
+              onChange={(e) => setSubForm({ ...subForm, name: e.target.value })}
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider mb-1.5 block">
+              Descripción (Opcional)
+            </label>
+            <textarea
+              className="input-field min-h-[80px] resize-none"
+              value={subForm.description}
+              onChange={(e) => setSubForm({ ...subForm, description: e.target.value })}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={() => setSubEdit(null)} className="btn-ghost">
+              Cancelar
+            </button>
+            <button type="submit" className="btn-primary px-6" disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
         </form>
