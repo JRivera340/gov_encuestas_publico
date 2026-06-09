@@ -378,4 +378,161 @@ export class SeedService {
       );
     }
   }
+
+  /**
+   * Arreglo idempotente y NO destructivo del módulo PYBA. No borra nada.
+   * - Fija visibleRoles de la categoría a ['GESTOR_PYBA'].
+   * - Activa (ACTIVE) las encuestas PYBA que estén en DRAFT.
+   * - Normaliza los nombres técnicos de la encuesta de Urgencias.
+   * - Crea la subcategoría/encuesta "Identificacion de canino" si no existe.
+   */
+  async seedPyba(): Promise<{ message: string; details: string[] }> {
+    const details: string[] = [];
+    const CAT_NAME = 'Protección y bienestar Animal';
+
+    // 1. Categoría + visibleRoles
+    const existingCat = await this.categoriesRepo.findOne({
+      where: { name: CAT_NAME },
+    });
+    let cat: Category;
+    if (!existingCat) {
+      cat = await this.categoriesRepo.save(
+        this.categoriesRepo.create({
+          name: CAT_NAME,
+          description: 'Bienestar animal',
+          visibleRoles: ['GESTOR_PYBA'],
+        }),
+      );
+      details.push('Categoría PYBA creada con visibleRoles=[GESTOR_PYBA]');
+    } else {
+      (existingCat as any).visibleRoles = ['GESTOR_PYBA'];
+      cat = await this.categoriesRepo.save(existingCat);
+      details.push('visibleRoles de categoría PYBA = [GESTOR_PYBA]');
+    }
+
+    // 2. Activar encuestas existentes de la categoría
+    const subs = await this.subcategoriesRepo.find({
+      where: { categoryId: cat.id },
+    });
+    for (const sub of subs) {
+      const surveys = await this.surveysRepo.find({
+        where: { subcategoryId: sub.id },
+      });
+      for (const s of surveys) {
+        if (s.status !== SurveyStatus.ACTIVE) {
+          s.status = SurveyStatus.ACTIVE;
+          await this.surveysRepo.save(s);
+          details.push(`Encuesta activada: ${s.title}`);
+        }
+      }
+    }
+
+    // 3. Normalizar Urgencias Veterinarias (nombres técnicos)
+    const urgSub = subs.find((s) => s.name === 'Urgencias Veterinarias');
+    if (urgSub) {
+      const urgSurvey = await this.surveysRepo.findOne({
+        where: { subcategoryId: urgSub.id },
+      });
+      if (urgSurvey) {
+        const qs = await this.questionsRepo.find({
+          where: { surveyId: urgSurvey.id },
+        });
+        const rename = async (from: string, to: string) => {
+          const q = qs.find((x) => x.name === from);
+          if (q && !qs.some((x) => x.name === to)) {
+            q.name = to;
+            await this.questionsRepo.save(q);
+            details.push(`Urgencias: ${from} -> ${to}`);
+          }
+        };
+        await rename('ubicacion', 'ubicacion_mapa');
+        await rename('evidencia_fotografica', 'fotos_evidencia');
+        if (!qs.some((x) => x.name === 'descripcion_general')) {
+          await this.questionsRepo.save(
+            this.questionsRepo.create({
+              surveyId: urgSurvey.id,
+              type: QuestionType.TEXTAREA,
+              name: 'descripcion_general',
+              label: 'Descripción del caso',
+              required: true,
+              order: 25,
+            } as any),
+          );
+          details.push('Urgencias: + descripcion_general');
+        }
+        if (!qs.some((x) => x.name === 'fecha_atencion')) {
+          await this.questionsRepo.save(
+            this.questionsRepo.create({
+              surveyId: urgSurvey.id,
+              type: QuestionType.DATE,
+              name: 'fecha_atencion',
+              label: 'Fecha de atención',
+              order: 26,
+            } as any),
+          );
+          details.push('Urgencias: + fecha_atencion');
+        }
+      }
+    }
+
+    // 4. Hoja de vida del canino (crear si falta)
+    const CANINO_NAME = 'Identificacion de canino';
+    let caninoSub = subs.find((s) => s.name === CANINO_NAME);
+    if (!caninoSub) {
+      caninoSub = await this.subcategoriesRepo.save(
+        this.subcategoriesRepo.create({
+          name: CANINO_NAME,
+          categoryId: cat.id,
+        }),
+      );
+      details.push('Subcategoría "Identificacion de canino" creada');
+    }
+    const caninoSurveys = await this.surveysRepo.find({
+      where: { subcategoryId: caninoSub.id },
+    });
+    if (caninoSurveys.length === 0) {
+      const survey = await this.surveysRepo.save(
+        this.surveysRepo.create({
+          title: 'PYBA - Identificación / Hoja de vida canino',
+          status: SurveyStatus.ACTIVE,
+          subcategoryId: caninoSub.id,
+          version: 1,
+        }),
+      );
+      const pybaEntidades = [
+        'Alcaldía Local de Santa Fé',
+        'IDPYBA',
+        'Subred Centro Oriente de Salud',
+      ].map((n) => ({ label: n, value: n }));
+      const questions: Partial<Question>[] = [
+        { type: QuestionType.SECTION_HEADER, label: 'Hoja de vida del canino', name: 'sec_canino', order: 1 },
+        { type: QuestionType.TEXT, label: 'Nombre del canino', name: 'nombre_canino', order: 10 },
+        { type: QuestionType.RADIO, label: 'Sexo', name: 'sexo', order: 11, options: [{ value: 'MACHO', label: 'Macho' }, { value: 'HEMBRA', label: 'Hembra' }] },
+        { type: QuestionType.TEXT, label: 'Edad aproximada', name: 'edad_aprox', order: 12 },
+        { type: QuestionType.TEXT, label: 'Raza / mestizo', name: 'raza', order: 13 },
+        { type: QuestionType.TEXT, label: 'Color', name: 'color', order: 14 },
+        { type: QuestionType.RADIO, label: 'Tamaño', name: 'tamano', order: 15, options: [{ value: 'PEQUENO', label: 'Pequeño' }, { value: 'MEDIANO', label: 'Mediano' }, { value: 'GRANDE', label: 'Grande' }] },
+        { type: QuestionType.TEXTAREA, label: 'Estado de salud', name: 'estado_salud', order: 16 },
+        { type: QuestionType.RADIO, label: '¿Esterilizado?', name: 'esterilizado', order: 17, options: [{ value: 'true', label: 'Sí' }, { value: 'false', label: 'No' }] },
+        { type: QuestionType.TEXTAREA, label: 'Observaciones', name: 'observaciones', order: 18 },
+        { type: QuestionType.SECTION_HEADER, label: 'Fecha', name: 'sec_fecha', order: 30 },
+        { type: QuestionType.DATE, label: 'Fecha de identificación', name: 'fecha_operativo', required: true, order: 31 },
+        { type: QuestionType.SECTION_HEADER, label: 'Ubicación', name: 'sec_ubic', order: 40 },
+        { type: QuestionType.LOCATION, label: 'Ubicación y Barrio', name: 'ubicacion_mapa', required: true, order: 41 },
+        { type: QuestionType.SECTION_HEADER, label: 'Evidencia Fotográfica', name: 'sec_foto', order: 50 },
+        { type: QuestionType.FILE, label: 'Foto del canino', name: 'fotos_evidencia', required: true, config: { maxFiles: 5, maxSizeMB: 10 }, order: 51 },
+        { type: QuestionType.SECTION_HEADER, label: 'Entidades', name: 'sec_ent', order: 60 },
+        { type: QuestionType.SELECT, label: 'Entidad responsable', name: 'entidad_responsable', options: pybaEntidades, order: 61 },
+        { type: QuestionType.MULTISELECT, label: 'Entidades acompañantes', name: 'entidades_acompanantes', options: pybaEntidades, order: 62 },
+      ];
+      for (const q of questions) {
+        await this.questionsRepo.save(
+          this.questionsRepo.create({ ...q, surveyId: survey.id }),
+        );
+      }
+      details.push('Encuesta canino creada (ACTIVE)');
+    }
+
+    return { message: 'Seed PYBA ejecutado', details };
+  }
 }

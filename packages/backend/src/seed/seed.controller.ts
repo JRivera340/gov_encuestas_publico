@@ -9,4 +9,10 @@ export class SeedController {
   run() {
     return this.service.run();
   }
+
+  // Arreglo idempotente y NO destructivo del módulo PYBA.
+  @Post('pyba')
+  seedPyba() {
+    return this.service.seedPyba();
+  }
 }
