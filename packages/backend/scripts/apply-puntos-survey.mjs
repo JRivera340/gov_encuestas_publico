@@ -98,6 +98,48 @@ const NUEVAS = [
   },
 ];
 
+// Mapa de orden final autoritativo, derivado 1:1 de buildPuntosAcumulacionQuestions
+// en packages/backend/src/seed/puntosAcumulacion.questions.ts. Incluye tanto las
+// preguntas nuevas (NUEVAS) como las que ya existen en la encuesta viva y no cambian
+// de contenido, pero sí necesitan renumerarse para no colisionar con las nuevas.
+const ORDER_MAP = {
+  sec_2: 1,
+  frecuenciaAcumulacion: 5,
+  tipoResiduo: 11,
+  percibeOlores: 12,
+  percibeVectores: 13,
+  areaLinealMetros: 14,
+  observaciones: 15,
+  entornoEscolar: 16,
+  nombreEntornoEscolar: 17,
+  tipoZona: 18,
+  tipoSuelo: 19,
+  condicionesZona: 20,
+  poblacionHabitanteCalle: 21,
+  factoresAcumulacion: 22,
+  camarasPunto: 23,
+  sec_generador: 24,
+  identificacionGenerador: 25,
+  tipoGenerador: 26,
+  nombreResponsable: 27,
+  direccionResponsable: 28,
+  observoDisposicion: 29,
+  fechaObservacion: 30,
+  metodoIdentificacion: 31,
+  actoresEstrategicos: 32,
+  telefonoActor: 33,
+  intervencionesRecomendadas: 34,
+  sec_3: 40,
+  fecha_operativo: 41,
+  sec_4: 50,
+  ubicacion_mapa: 51,
+  sec_5: 60,
+  fotos_evidencia: 61,
+  sec_6: 70,
+  entidad_responsable: 71,
+  entidades_acompanantes: 72,
+};
+
 const j = async (r) => {
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
   return r.json();
@@ -106,28 +148,30 @@ const j = async (r) => {
 async function computePlan(survey, nuevas) {
   const byName = Object.fromEntries(survey.questions.map((q) => [q.name, q]));
   const plan = [];
+  const patchedNames = new Set();
 
   if (byName.sec_2 && byName.sec_2.label !== '2. Datos del punto') {
     plan.push({ verb: 'PATCH', id: byName.sec_2.id, name: 'sec_2', body: { label: '2. Datos del punto' } });
+    patchedNames.add('sec_2');
   }
 
   if (byName.actoresEstrategicos) {
-    plan.push({
-      verb: 'PATCH',
-      id: byName.actoresEstrategicos.id,
-      name: 'actoresEstrategicos',
-      body: {
-        type: 'MULTISELECT',
-        options: [
-          { value: 'JAC', label: 'Junta de Acción Comunal' },
-          { value: 'ADMINISTRADOR_SECTOR', label: 'Administrador del sector' },
-          { value: 'COMERCIANTE', label: 'Comerciante' },
-          { value: 'EMPRESA', label: 'Empresa' },
-          { value: 'ALCALDIA_LOCAL', label: 'Alcaldía Local' },
-          { value: 'OTRO', label: 'Otro' },
-        ],
-      },
-    });
+    const body = {
+      type: 'MULTISELECT',
+      options: [
+        { value: 'JAC', label: 'Junta de Acción Comunal' },
+        { value: 'ADMINISTRADOR_SECTOR', label: 'Administrador del sector' },
+        { value: 'COMERCIANTE', label: 'Comerciante' },
+        { value: 'EMPRESA', label: 'Empresa' },
+        { value: 'ALCALDIA_LOCAL', label: 'Alcaldía Local' },
+        { value: 'OTRO', label: 'Otro' },
+      ],
+    };
+    if (byName.actoresEstrategicos.order !== ORDER_MAP.actoresEstrategicos) {
+      body.order = ORDER_MAP.actoresEstrategicos;
+    }
+    plan.push({ verb: 'PATCH', id: byName.actoresEstrategicos.id, name: 'actoresEstrategicos', body });
+    patchedNames.add('actoresEstrategicos');
   }
 
   for (const q of nuevas) {
@@ -136,6 +180,17 @@ async function computePlan(survey, nuevas) {
 
   if (byName.quienDispuso) {
     plan.push({ verb: 'DELETE', id: byName.quienDispuso.id, name: 'quienDispuso' });
+  }
+
+  // Renumerar las preguntas EXISTENTES y no tocadas aún cuyo order actual en prod
+  // no coincide con el order final del seed (evita colisiones con las nuevas).
+  for (const [name, order] of Object.entries(ORDER_MAP)) {
+    if (patchedNames.has(name)) continue;
+    const existing = byName[name];
+    if (!existing) continue; // se crea vía POST, ya lleva el order correcto
+    if (existing.order !== order) {
+      plan.push({ verb: 'PATCH', id: existing.id, name, body: { order } });
+    }
   }
 
   return plan;
