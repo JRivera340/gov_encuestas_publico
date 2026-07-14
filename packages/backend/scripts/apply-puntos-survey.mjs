@@ -142,7 +142,8 @@ const ORDER_MAP = {
 
 const j = async (r) => {
   if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-  return r.json();
+  const text = await r.text();
+  return text ? JSON.parse(text) : null;
 };
 
 async function computePlan(survey, nuevas) {
